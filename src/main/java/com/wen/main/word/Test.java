@@ -19,6 +19,13 @@ public class Test {
         paragraph.getpPr().setAlgin("center"); /** 段落 样式 居中 **/
         word.append(paragraph); /** 将段落 插入 word **/
         WordTable wordTable = new WordTable(3,3); /**  创建 word 表格 3x3**/
+        List<WordTable.Row> rows = wordTable.getRows();
+        for(WordTable.Row row : rows){
+            List<WordTable.Row.Cell> cells = row.getCells();
+            for(WordTable.Row.Cell cell : cells){
+                cell.setParagraph(paragraph);
+            }
+        }
         word.append(wordTable); /** 将表格插入文档 **/
         word.toWord("d:\\zs3.docx"); /** 输出word **/
 

@@ -224,6 +224,9 @@ public class WordTable implements WordItem {
             return this;
         }
 
+        public List<Cell> getCells(){
+            return this.cells;
+        }
         protected CoreProperties toCoreproperties() {
             CoreProperties tr = new CoreProperties("w","tr");
             CoreProperties tblPrEx = this.tblPrEx.toCoreProperties();
