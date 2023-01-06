@@ -2,22 +2,33 @@ package com.wen.main.word.table;
 
 import com.wen.main.word.core.CoreProperties;
 import com.wen.main.word.core.WordItem;
+import com.wen.main.word.paragraph.Paragraph;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Data
 public class WordTable implements WordItem {
+    String elementId;
     String name = "tbl";
     String prefix = "w";
     TblPr tableProportes = new TblPr("5","auto","dxa","autofit");
+    int rowNum;
+    int cellNum;
     List<Row> rows;
     /** tblGrid gridCol**/
     List<Integer> cellWith = new ArrayList<>();
 
-    public WordTable(int rowNum,int cellNum) {
+    public String getElementId() {
+        return elementId;
+    }
+
+    public void setElementId(String elementId) {
+        this.elementId = elementId;
+    }
+
+    public WordTable(int rowNum, int cellNum) {
         this.rows = new ArrayList<>();
         for(int i = 0;i < rowNum;i++){
             Row row = new Row();
@@ -27,8 +38,98 @@ public class WordTable implements WordItem {
        for(int i = 0; i < cellNum;i++){
            cellWith.add(2840);
        }
+       this.rowNum = rowNum;
+       this.cellNum = cellNum;
     }
+    public WordTable() {
 
+    }
+    /** cellnum 列数 默认1 小于1 所有列合并行 **/
+    public WordTable mergeRow(int cellnum,int start,int end){
+        if(cellnum > this.cellNum){
+            throw new RuntimeException("列数大于实际列");
+        }
+        if(start > end){
+            throw new RuntimeException("起始入行数大于结束行数");
+        }
+        if(end > this.rowNum){
+            throw new RuntimeException("结束输入行数大于实际行数");
+        }
+        if(start >= end ){
+            throw new RuntimeException("起始输入行数必须小于结束行数");
+        }
+
+
+        if(cellnum >= 1){
+            Row row = this.rows.get(start-1);
+            Row.Cell cell = row.getCells().get(cellnum-1);
+            cell.tcPr.vMerge="restart";
+
+            for(int index = start;index < end;index++){
+                Row row_o = this.rows.get(index);
+                Row.Cell cell_o = row_o.getCells().get(cellnum-1);
+                cell_o.tcPr.vMerge="continue";
+                cell.addParagraph(cell_o.getParagraph());
+                cell_o.setParagraph(new ArrayList<>());
+            }
+
+        }else {
+            for(int i =0;i < this.cellNum;i++){
+                Row row = this.rows.get(start-1);
+                Row.Cell cell = row.getCells().get(i);
+                cell.tcPr.vMerge="restart";
+
+                for(int index = start;index < end;index++){
+                    Row.Cell cell_o = row.getCells().get(i);
+                    cell_o.tcPr.vMerge="continue";
+                    cell.addParagraph(cell_o.getParagraph());
+                    cell_o.setParagraph(new ArrayList<>());
+                }
+            }
+        }
+        return this;
+    }
+    /** rownum 行数 默认1 小于1 所有行合并列 **/
+    public WordTable mergeCell(int rownum,int start,int end){
+        if(rownum > this.rowNum){
+            throw new RuntimeException("起始输入行数大于实际行数");
+        }
+        if(start > this.cellNum){
+            throw new RuntimeException("起始输入列数大于实际列数");
+        }
+        if(start >= end ){
+            throw new RuntimeException("起始入列数必须小于结束列数");
+        }
+        if(end > this.cellNum){
+            throw new RuntimeException("结束输入列数大于实际列数");
+        }
+        if(rownum >= 1){
+            int index = rownum-1;
+            Row row = this.rows.get(index);
+            List<Row.Cell> cells = row.getCells();
+            Row.Cell cell = cells.get(start-1);
+            cell.tcPr.gridSpan = end -start+1;
+            for(int i = start;i< end;i++){
+                Row.Cell cell1 = cells.get(i);
+                cell.tcPr.w = (Integer.parseInt(cell.tcPr.w)+Integer.parseInt(cell1.tcPr.w))+"";
+
+                cell.addParagraph(cell1.getParagraph());
+                cells.remove(i);
+                i--;
+                end--;
+            }
+        }else {
+            for(int index = 0;index < this.rowNum;index++){
+                Row row = this.rows.get(index);
+                List<Row.Cell> cells = row.getCells();
+                Row.Cell cell = cells.get(0);
+                cell.tcPr.gridSpan = end -start;
+                cells.clear();
+                cells.add(cell);
+            }
+        }
+        return this;
+    }
     @Override
     public CoreProperties toCoreProperties() {
         CoreProperties tbl = new CoreProperties("w","tbl");
@@ -47,7 +148,7 @@ public class WordTable implements WordItem {
     }
 
     @Data
-    private class TblPr {
+    public class TblPr {
         String tblStyle;
         String tblW;
         String tblInd;
@@ -191,25 +292,50 @@ public class WordTable implements WordItem {
 
         @Data
         public class Cell {
-            private WordItem Paragraph;
+            private List<WordItem> paragraph = new ArrayList<>();
             private TcPr tcPr = new TcPr();
             @Data
             public class TcPr {
                 String w = "2840";
                 String type = "dxa";
+                int gridSpan;/** 横向 **/
+                String vMerge;/**纵向 restart  continue**/
+                public CoreProperties toCoreProperties(){
+                    CoreProperties tcPr = new CoreProperties("w","tcPr");
+                    CoreProperties tcW = new CoreProperties("w","tcW");
+                    tcW.addAttribute("w:w",this.w);
+                    tcW.addAttribute("w:type",this.type);
+                    tcPr.addChild(tcW);
+                    if(gridSpan > 0){
+                        CoreProperties gridSpan = new CoreProperties("w","gridSpan");
+                        gridSpan.addAttribute("w:val",this.gridSpan+"");
+                        tcPr.addChild(gridSpan);
+                    }
+                    if(vMerge != null && !vMerge.equals("")){
+                        CoreProperties vMerge = new CoreProperties("w","vMerge");
+                        vMerge.addAttribute("w:vMerge",this.vMerge);
+                        tcPr.addChild(vMerge);
+                    }
+                    return tcPr;
+                }
             }
-
+            public Cell addParagraph(WordItem paragraph){
+                this.paragraph.add(paragraph);
+                return this;
+            }
+            public Cell addParagraph(List<WordItem> paragraph){
+                this.paragraph.addAll(paragraph);
+                return this;
+            }
             public CoreProperties toCoreProperties(){
                 CoreProperties coreProperties = new CoreProperties("w","tc");
-                CoreProperties tcPr = new CoreProperties("w","tcPr");
-                CoreProperties tcW = new CoreProperties("w","tcW");
-                tcW.addAttribute("w:w",this.tcPr.w);
-                tcW.addAttribute("w:type",this.tcPr.type);
-                tcPr.addChild(tcW);
+                CoreProperties tcPr = this.tcPr.toCoreProperties();
                 coreProperties.addChild(tcPr);
-                if(this.Paragraph != null){
-                    CoreProperties item = this.Paragraph.toCoreProperties();
-                    coreProperties.addChild(item);
+                if(this.paragraph.size() > 0){
+                   for(int i = 0; i < this.paragraph.size(); i++){
+                       CoreProperties item = this.paragraph.get(i).toCoreProperties();
+                       coreProperties.addChild(item);
+                   }
                 }
                 return coreProperties;
             }

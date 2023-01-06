@@ -12,7 +12,7 @@ public class Test {
         Word word = new Word(); /** word 对象 **/
         word.createNewWord(); /** 新建一个空白 word  **/
         Paragraph paragraph = new Paragraph();/** 插入段落  **/
-        paragraph.setText("test001"); /** 段落插入 文字 **/
+        paragraph.addText("test001"); /** 段落插入 文字 **/
         paragraph.setpStyle("2"); /** 设置样式 2 标题 **/
         paragraph.setFontColor(Color.red.getCode());/**段落 字体 红色 **/
         paragraph.setBidi("0"); /** 固定参数 **/
@@ -23,9 +23,11 @@ public class Test {
         for(WordTable.Row row : rows){
             List<WordTable.Row.Cell> cells = row.getCells();
             for(WordTable.Row.Cell cell : cells){
-                cell.setParagraph(paragraph);
+                cell.addParagraph(paragraph);
             }
         }
+        wordTable.mergeCell(1,1,2);
+        wordTable.mergeRow(1,2,3);
         word.append(wordTable); /** 将表格插入文档 **/
         word.toWord("d:\\zs3.docx"); /** 输出word **/
 

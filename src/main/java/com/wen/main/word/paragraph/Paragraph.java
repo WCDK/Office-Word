@@ -4,16 +4,29 @@ import com.wen.main.word.core.CoreProperties;
 import com.wen.main.word.core.WordItem;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 public class Paragraph implements WordItem {
+    private String elementId;
     private String prefix = "w";
     private String name = "p";
     private RProperties pPr;
-    private R txt = new R();
+    private List<R> txts = new ArrayList<>();
     private String imageUrl;
     private String imageBase64;
     private BookmarkStart bookmarkStart = new BookmarkStart();
     private BookmarkEnd bookmarkEnd = new BookmarkEnd();
+
+    public String getElementId() {
+        return elementId;
+    }
+
+    public void setElementId(String elementId) {
+        this.elementId = elementId;
+    }
 
     public Paragraph() {
         pPr = new RProperties();
@@ -24,8 +37,8 @@ public class Paragraph implements WordItem {
         return pPr;
     }
 
-    public R getTxt() {
-        return txt;
+    public List<R> getTxts() {
+        return txts;
     }
 
     public String getPrefix() {
@@ -36,12 +49,29 @@ public class Paragraph implements WordItem {
         return name;
     }
 
-    public String getTextString() {
-        return this.txt.getT();
+    public List<String> getTextString() {
+        return this.txts.stream().map(R::getT).collect(Collectors.toList());
     }
 
-    public void setText(String text) {
-        this.txt.setT(text);
+    public void setText(List<R> text) {
+        this.txts = text;
+    }
+    public void addText(List<R> text) {
+        this.txts.addAll(text);
+    }
+    public void addText(R text) {
+        this.txts.add(text);
+    }
+    public void addText(String text) {
+        R r = new R();
+        r.setT(text);
+        this.txts.add(r);
+    }
+    public void addText(String text,String color) {
+        R r = new R();
+        r.setT(text);
+        r.setColor(color);
+        this.txts.add(r);
     }
 
     public String getImageUrl() {
@@ -60,20 +90,35 @@ public class Paragraph implements WordItem {
         this.imageBase64 = imageBase64;
     }
 
-    public String getFontColor() {
-        return this.txt.rPr.fonts.color;
+    public List<String>  getFontColor() {
+        List<String> colors = new ArrayList<>();
+        this.txts.forEach(r->{
+            String color = r.getrPr().getFonts().getColor();
+            colors.add(color);
+        });
+        return colors;
     }
 
     public void setFontColor(String color) {
-        this.txt.setColor(color);
+        this.txts.forEach(r->{
+            r.getrPr().getFonts().setColor(color);
+        });
     }
 
-    public String getBackground() {
-        return this.txt.rPr.fonts.highlight;
+    public List<String> getBackground() {
+
+        List<String> highlights = new ArrayList<>();
+        this.txts.forEach(r->{
+            String highlight = r.getrPr().getFonts().highlight;
+            highlights.add(highlight);
+        });
+        return highlights;
     }
 
     public void setBackground(String background) {
-        this.txt.rPr.fonts.highlight = background;
+        this.txts.forEach(r->{
+            r.getrPr().getFonts().highlight = background;
+        });
     }
 
     public String getpStyle() {
@@ -161,8 +206,9 @@ public class Paragraph implements WordItem {
     public CoreProperties toCoreProperties(){
         CoreProperties p = new CoreProperties(this.prefix,this.name);
         CoreProperties pPr = this.pPr.toCoreProperties();
-        CoreProperties coreProperties = this.txt.toCoreProperties();
-        p.addChild(pPr,coreProperties);
+        List<CoreProperties> collect = this.txts.stream().map(R::toCoreProperties).collect(Collectors.toList());
+        p.addChild(pPr);
+        p.addChild(collect);
         if(this.bookmarkStart.id != null){
             CoreProperties start = new CoreProperties("w",this.bookmarkStart.name);
             CoreProperties end = new CoreProperties("w",this.bookmarkEnd.name);

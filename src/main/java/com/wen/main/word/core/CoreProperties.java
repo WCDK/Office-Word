@@ -69,6 +69,10 @@ public class CoreProperties implements Cloneable {
         this.child.add(coreProperties);
         return this.child;
     }
+    public List<CoreProperties> addChild( List<CoreProperties> coreProperties){
+        this.child.addAll(coreProperties);
+        return this.child;
+    }
     public List<CoreProperties> addChild(CoreProperties coreProperties,CoreProperties...more){
         this.child.add(coreProperties);
         if(more != null && more.length > 0){
