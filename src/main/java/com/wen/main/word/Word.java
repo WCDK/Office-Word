@@ -587,10 +587,33 @@ public class Word {
 
         return appendParagraph(wordItem.toCoreProperties());
     }
+    public Word getTable(){
+        List<CoreProperties> child = this.documentContent.getChild();
+        for(CoreProperties coreProperties:child){
+            String name = coreProperties.getName();
+            if(name.equals("tbl")){
+                List<CoreProperties> tableChild = coreProperties.getChild();
+                int rowNum = tableChild.size() - 2;
+                int cellNum = tableChild.get(1).getChild().size();
 
-    public Word appendTable(){
-
+                WordTable wordTable = new WordTable(rowNum,cellNum);
+            }
+        }
         return this;
+    }
+
+    public void aa(CoreProperties coreProperties){
+        WordTable wordTable = new WordTable();
+        String prefix = coreProperties.getPrefix();
+        String name = coreProperties.getName();
+        Map<String, String> attribute = coreProperties.getAttribute();
+        Map<String, String> nameSpace = coreProperties.getNameSpace();
+
+        wordTable.setPrefix(prefix);
+        wordTable.setName(name);
+        WordTable.TblPr tableProportes = wordTable.getTableProportes();
+
+
     }
 
     public Word appendParagraph(CoreProperties context) {
