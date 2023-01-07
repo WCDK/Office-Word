@@ -1,4 +1,4 @@
-# Office-Word  
+# Office-Word  开源word工具，兼容wps 微软office
 ## v1  
 >v1.0  
   发布测试 创建空白word  
