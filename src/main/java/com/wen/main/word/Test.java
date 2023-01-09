@@ -26,7 +26,7 @@ public class Test {
                 cell.addParagraph(paragraph);
             }
         }
-        wordTable.mergeCell(1,1,2);
+        wordTable.mergeCell(1,1,3);
         wordTable.mergeRow(1,2,3);
         word.append(wordTable); /** 将表格插入文档 **/
         word.toWord("d:\\zs3.docx"); /** 输出word **/

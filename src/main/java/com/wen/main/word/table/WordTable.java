@@ -83,7 +83,7 @@ public class WordTable implements WordItem {
                     Row.Cell cell_o = row.getCells().get(i);
                     cell_o.tcPr.vMerge="continue";
                     cell.addParagraph(cell_o.getParagraph());
-                    cell_o.setParagraph(new ArrayList<>());
+//                    cell_o.setParagraph(new ArrayList<>());
                 }
             }
         }
@@ -153,6 +153,7 @@ public class WordTable implements WordItem {
         String tblW;
         String tblInd;
         String tblLayout;
+        String name = "tblPr";
 
         Borders borders = new Borders();
         Margins tblCellMar = new Margins("0", "180", "0", "180");
@@ -164,11 +165,15 @@ public class WordTable implements WordItem {
             this.tblLayout = tblLayout;
         }
 
+        public TblPr(String name) {
+            this.name = name;
+        }
         public TblPr() {
+
         }
 
         public CoreProperties toCoreProperties() {
-            CoreProperties tblPr = new CoreProperties("w", "tblPr");
+            CoreProperties tblPr = new CoreProperties("w", this.name);
             if(this.tblStyle != null){
                 CoreProperties tblStyle = new CoreProperties("w", "tblStyle");
                 tblStyle.addAttribute("w:val", this.tblStyle);
@@ -288,7 +293,7 @@ public class WordTable implements WordItem {
 
     public class Row {
         private List<Cell> cells = new ArrayList<>();
-        private TblPr tblPrEx = new TblPr();
+        private TblPr tblPrEx = new TblPr("tblPrEx");
 
         @Data
         public class Cell {
@@ -336,6 +341,8 @@ public class WordTable implements WordItem {
                        CoreProperties item = this.paragraph.get(i).toCoreProperties();
                        coreProperties.addChild(item);
                    }
+                }else {
+                    coreProperties.addChild(new Paragraph().toCoreProperties());
                 }
                 return coreProperties;
             }
