@@ -2,6 +2,7 @@ package com.wen.main.word;
 
 import com.wen.main.word.core.CoreProperties;
 import com.wen.main.word.core.WordItem;
+import com.wen.main.word.image.WordImage;
 import com.wen.main.word.paragraph.Paragraph;
 import com.wen.main.word.table.WordTable;
 import org.dom4j.*;
@@ -10,6 +11,8 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultText;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
@@ -18,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -66,16 +70,20 @@ public class Word {
     private CoreProperties word_rels_document_xml;
     private CoreProperties word_theme_theme1;
     private CoreProperties word_fontTable;
+    private CoreProperties word_endnotes;
+    private CoreProperties word_footnotes;
     private CoreProperties word_settings;
     private CoreProperties word_styles;
     private CoreProperties word_webSettings;
     private CoreProperties Content_Types;
+    private List<WordImage> wordImages = new ArrayList<>();
 
     transient String BASE_PATH = "";
     transient String TEMP_PATH = "";
     transient String[] BASE_SIFFIX = {".rels", ".xml", ".jpeg", ".png"};
     transient List<String> BASE_SIFFIX_LIST;
     transient CoreProperties documentContent;
+
 
 
     public Word() {
@@ -104,6 +112,8 @@ public class Word {
             this.word_theme_theme1 = fixElement("wordSource/word/theme/theme1.xml");
             this.documentContent = fixElement("wordSource/word/document.xml");
             this.word_fontTable = fixElement("wordSource/word/fontTable.xml");
+            this.word_endnotes = fixElement("wordSource/word/endnotes.xml");
+            this.word_footnotes = fixElement("wordSource/word/footnotes.xml");
             this.word_settings = fixElement("wordSource/word/settings.xml");
             this.word_styles = fixElement("wordSource/word/styles.xml");
             this.word_webSettings = fixElement("wordSource/word/webSettings.xml");
@@ -218,6 +228,12 @@ public class Word {
         inputStream = propertiesToStrem(this.word_fontTable);
         write("word/fontTable.xml",inputStream,zipOutputStream);
 
+        inputStream = propertiesToStrem(this.word_endnotes);
+        write("word/endnotes.xml",inputStream,zipOutputStream);
+
+        inputStream = propertiesToStrem(this.word_footnotes);
+        write("word/footnotes.xml",inputStream,zipOutputStream);
+
         inputStream = propertiesToStrem(this.word_settings);
         write("word/settings.xml",inputStream,zipOutputStream);
 
@@ -229,6 +245,17 @@ public class Word {
 
         inputStream = propertiesToStrem(this.Content_Types);
         write("[Content_Types].xml",inputStream,zipOutputStream);
+
+        if(wordImages.size() > 0){
+            wordImages.forEach(e->{
+              try {
+                  InputStream iin = new BufferedInputStream(new FileInputStream(e.getPicSrc()));
+                  write(e.getTarget(),iin,zipOutputStream);
+              }catch (Exception ex){
+                  ex.printStackTrace();
+              }
+            });
+        }
 
         zipOutputStream.flush();
         zipOutputStream.close();
@@ -298,9 +325,11 @@ public class Word {
         }
         element1.setName(name);
         Map<String, String> attribute = properties.getAttribute();
-        attribute.forEach((k, v) -> {
-            element1.addAttribute(k, v);
-        });
+        if(attribute != null && attribute.size() > 0){
+            attribute.forEach((k, v) -> {
+                element1.addAttribute(k, v);
+            });
+        }
         List<CoreProperties> child = properties.getChild();
         for (int i = 0; i < child.size(); i++) {
             CoreProperties coreProperties = child.get(i);
@@ -579,13 +608,50 @@ public class Word {
     }
 
     public Word append(WordItem wordItem) {
-//        if (wordItem instanceof Paragraph ) {
-//            return appendParagraph((Paragraph) wordItem);
-//        }else if(wordItem instanceof WordTable){
-//
-//        }
+        if (wordItem instanceof WordImage) {
+            addImage((WordImage) wordItem);
+        }
 
         return appendParagraph(wordItem.toCoreProperties());
+    }
+
+    private void addImage(WordImage image){
+        String type = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
+        List<CoreProperties> child = this.word_rels_document_xml.getChild();
+        CoreProperties coreProperties = child.stream().max(Comparator.comparing(x -> x.getAttribute().get("Id"))).get();
+        String rid = coreProperties.getAttribute().get("Id");
+        long i = Long.parseLong(rid.substring(3))+1;
+
+        List<CoreProperties> collect = child.stream().filter(e -> {
+            return e.getAttribute().get("Target").endsWith("jpeg");
+        }).collect(Collectors.toList());
+        CoreProperties coreProperties1 = collect.stream().max(Comparator.comparing(x -> x.getAttribute().get("Target"))).get();
+        String target = coreProperties1.getAttribute().get("Target");
+        long l = Long.parseLong(target.substring(11, target.indexOf(".")));
+        String newTarget = "media/image"+l+1+".jpeg";
+        image.setTarget(newTarget);
+        image.setId(String.valueOf(l+1));
+        image.setName("图片 "+String.valueOf(l+1));
+        image.setRId("rId"+i);
+
+        try{
+            BufferedImage im = ImageIO.read(new FileInputStream(image.getPicSrc()));
+            image.setWidth(im.getWidth());
+            image.setHeight(im.getHeight());
+            im.flush();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        CoreProperties newCor = new CoreProperties("","Relationship");
+        newCor.addAttribute("Id",image.getRId());
+        newCor.addAttribute("Type",type);
+        newCor.addAttribute("Target",image.getTarget());
+        child.add(newCor);
+
+        this.wordImages.add(image);
+
     }
     public Word getTable(){
         List<CoreProperties> child = this.documentContent.getChild();
