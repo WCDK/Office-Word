@@ -57,13 +57,13 @@ public class CoreProperties implements Cloneable {
         return attribute;
     }
 
-    public Map<String,String> addNameSpace(String prefix, String uri){
+    public CoreProperties addNameSpace(String prefix, String uri){
         this.nameSpace.put(prefix,uri);
-        return this.nameSpace;
+        return this;
     }
-    public Map<String,String> addAttribute(String qualifiedName, String value){
+    public CoreProperties addAttribute(String qualifiedName, String value){
         this.attribute.put(qualifiedName,value);
-        return this.attribute;
+        return this;
     }
     public List<CoreProperties> addChild(CoreProperties coreProperties){
         this.child.add(coreProperties);

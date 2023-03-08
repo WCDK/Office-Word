@@ -312,10 +312,7 @@ public class Word {
         } else if ("modified".equalsIgnoreCase(properties.getName())) {
             value = properties.getTimeString();
         }
-
         Element element1 = element.addElement(name);
-        element1.setText(value);
-
         Map<String, String> nameSpace = properties.getNameSpace();
         nameSpace.forEach((k, v) -> {
             element1.addNamespace(k, v);
@@ -329,6 +326,9 @@ public class Word {
             attribute.forEach((k, v) -> {
                 element1.addAttribute(k, v);
             });
+        }
+        if(value != null){
+            element1.setText(value);
         }
         List<CoreProperties> child = properties.getChild();
         for (int i = 0; i < child.size(); i++) {
@@ -610,6 +610,9 @@ public class Word {
     public Word append(WordItem wordItem) {
         if (wordItem instanceof WordImage) {
             addImage((WordImage) wordItem);
+            Paragraph paragraph = new Paragraph();
+            paragraph.setWordItem(wordItem);
+            return appendParagraph(paragraph.toCoreProperties());
         }
 
         return appendParagraph(wordItem.toCoreProperties());
@@ -625,27 +628,42 @@ public class Word {
         List<CoreProperties> collect = child.stream().filter(e -> {
             return e.getAttribute().get("Target").endsWith("jpeg");
         }).collect(Collectors.toList());
-        CoreProperties coreProperties1 = collect.stream().max(Comparator.comparing(x -> x.getAttribute().get("Target"))).get();
-        String target = coreProperties1.getAttribute().get("Target");
-        long l = Long.parseLong(target.substring(11, target.indexOf(".")));
-        String newTarget = "media/image"+l+1+".jpeg";
+        int l = 0;
+        if(collect != null && collect.size() > 0){
+            CoreProperties coreProperties1 = collect.stream().max(Comparator.comparing(x -> x.getAttribute().get("Target"))).get();
+            String target = coreProperties1.getAttribute().get("Target");
+            l = Integer.parseInt(target.substring(11, target.indexOf(".")));
+        }
+
+        String newTarget = "media/image"+(l+1)+".jpeg";
         image.setTarget(newTarget);
         image.setId(String.valueOf(l+1));
         image.setName("图片 "+String.valueOf(l+1));
-        image.setRId("rId"+i);
+        image.setEmbed("rId"+i);
 
         try{
-            BufferedImage im = ImageIO.read(new FileInputStream(image.getPicSrc()));
-            image.setWidth(im.getWidth());
-            image.setHeight(im.getHeight());
-            im.flush();
+//            BufferedImage im = ImageIO.read(new FileInputStream(image.getPicSrc()));
+//            image.setWidth(im.getWidth());
+//            image.setHeight(im.getHeight());
+            File file = new File(image.getPicSrc());
+            String descr = file.getName();
+            file = null;
+            descr = descr.substring(0,descr.lastIndexOf("."));
+            image.setDescr(descr);
+            image.setExtent_cx(5266690);
+            image.setExtent_cy(3107690);
+            image.setDist_l(114300);
+            image.setDist_r(114300);
+            image.setExtent_r(10160);
+            image.setExtent_b(16510);
+//            im.flush();
         }catch (Exception e){
             e.printStackTrace();
         }
 
 
         CoreProperties newCor = new CoreProperties("","Relationship");
-        newCor.addAttribute("Id",image.getRId());
+        newCor.addAttribute("Id",image.getEmbed());
         newCor.addAttribute("Type",type);
         newCor.addAttribute("Target",image.getTarget());
         child.add(newCor);
@@ -668,19 +686,6 @@ public class Word {
         return this;
     }
 
-    public void aa(CoreProperties coreProperties){
-        WordTable wordTable = new WordTable();
-        String prefix = coreProperties.getPrefix();
-        String name = coreProperties.getName();
-        Map<String, String> attribute = coreProperties.getAttribute();
-        Map<String, String> nameSpace = coreProperties.getNameSpace();
-
-        wordTable.setPrefix(prefix);
-        wordTable.setName(name);
-        WordTable.TblPr tableProportes = wordTable.getTableProportes();
-
-
-    }
 
     public Word appendParagraph(CoreProperties context) {
         CoreProperties coreProperties = documentContent.getChild().get(0);
