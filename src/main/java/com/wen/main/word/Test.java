@@ -10,6 +10,15 @@ import java.util.List;
 public class Test {
 
     public static void main(String[] args) throws Exception {
+        a();
+        b();
+    }
+    public static void b() throws Exception{
+        Word word = new Word();
+        word.loadWord("d:\\zs4.docx");
+        System.out.println(word.countWords());
+    }
+    public static void a() throws Exception{
         /** word 对象 **/
         Word word = new Word();
         /** 新建一个空白 word  **/
@@ -26,24 +35,11 @@ public class Test {
         paragraph.setAlgin("center");
         /** 将段落 插入 word **/
         word.append(paragraph);
-        /**  创建 word 表格 3x3**/
-//        WordTable wordTable = new WordTable(3,3);
-//        List<WordTable.Row> rows = wordTable.getRows();
-//        for(WordTable.Row row : rows){
-//            List<WordTable.Row.Cell> cells = row.getCells();
-//            for(WordTable.Row.Cell cell : cells){
-//                cell.addParagraph(paragraph);
-//            }
-//        }
-//        wordTable.mergeCell(1,1,3);
-//        wordTable.mergeRow(1,2,3);
-        /** 将表格插入文档 **/
-//        word.append(wordTable);
+
         WordImage wordImage = new WordImage("e:/234.jpg");
         word.append(wordImage);
         /** 输出word **/
         word.toWord("d:\\zs4.docx");
-
     }
 
 }

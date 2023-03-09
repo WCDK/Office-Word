@@ -20,6 +20,11 @@ public class CoreProperties implements Cloneable {
         this.name = name;
         this.prefix = prefix;
     }
+    public CoreProperties( String prefix,String name,String value) {
+        this.name = name;
+        this.prefix = prefix;
+        this.value = value;
+    }
 
     public String getName() {
         return name;

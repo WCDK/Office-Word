@@ -1,5 +1,6 @@
 package com.wen.main.word;
 
+import com.wen.main.word.core.App;
 import com.wen.main.word.core.CoreProperties;
 import com.wen.main.word.core.WordItem;
 import com.wen.main.word.image.WordImage;
@@ -67,6 +68,7 @@ public class Word {
     private CoreProperties _rels_rels;
     private CoreProperties docProps_app;
     private CoreProperties docProps_core;
+    private CoreProperties docProps_custom;
     private CoreProperties word_rels_document_xml;
     private CoreProperties word_theme_theme1;
     private CoreProperties word_fontTable;
@@ -77,6 +79,7 @@ public class Word {
     private CoreProperties word_webSettings;
     private CoreProperties Content_Types;
     private List<WordImage> wordImages = new ArrayList<>();
+    private App app = new App();
 
     transient String BASE_PATH = "";
     transient String TEMP_PATH = "";
@@ -108,6 +111,7 @@ public class Word {
             this._rels_rels = fixElement("wordSource/_rels/.rels");
             this.docProps_app = fixElement("wordSource/docProps/app.xml");
             this.docProps_core = fixElement("wordSource/docProps/core.xml");
+            this.docProps_custom = fixElement("wordSource/docProps/custom.xml");
             this.word_rels_document_xml = fixElement("wordSource/word/_rels/document.xml.rels");
             this.word_theme_theme1 = fixElement("wordSource/word/theme/theme1.xml");
             this.documentContent = fixElement("wordSource/word/document.xml");
@@ -210,11 +214,15 @@ public class Word {
         InputStream inputStream = propertiesToStrem(this._rels_rels);
         write("_rels/.rels",inputStream,zipOutputStream);
 
+        this.docProps_app = this.app.toCoreProperties();
         inputStream = propertiesToStrem(this.docProps_app);
         write("docProps/app.xml",inputStream,zipOutputStream);
 
         inputStream = propertiesToStrem(this.docProps_core);
         write("docProps/core.xml",inputStream,zipOutputStream);
+
+        inputStream = propertiesToStrem(this.docProps_custom);
+        write("docProps/custom.xml",inputStream,zipOutputStream);
 
         inputStream = propertiesToStrem(this.word_rels_document_xml);
         write("word/_rels/document.xml.rels",inputStream,zipOutputStream);
@@ -250,7 +258,7 @@ public class Word {
             wordImages.forEach(e->{
               try {
                   InputStream iin = new BufferedInputStream(new FileInputStream(e.getPicSrc()));
-                  write(e.getTarget(),iin,zipOutputStream);
+                  write("word/"+e.getTarget(),iin,zipOutputStream);
               }catch (Exception ex){
                   ex.printStackTrace();
               }
@@ -272,14 +280,16 @@ public class Word {
         Document document = DocumentHelper.createDocument();
 
         String rootName = properties.getName();
-        if (!properties.getPrefix().trim().equals("")) {
+        if (properties.getPrefix() != null && !properties.getPrefix().trim().equals("")) {
             rootName = properties.getPrefix() + ":" + rootName;
         }
         Element recordNode = document.addElement(rootName);
         Map<String, String> nameSpace = properties.getNameSpace();
-        nameSpace.forEach((k, v) -> {
-            recordNode.addNamespace(k, v);
-        });
+        if(nameSpace != null && nameSpace.size() > 0){
+            nameSpace.forEach((k, v) -> {
+                recordNode.addNamespace(k, v);
+            });
+        }
         Map<String, String> attribute = properties.getAttribute();
         attribute.forEach((k, v) -> {
             recordNode.addAttribute(k, v);
@@ -317,7 +327,7 @@ public class Word {
         nameSpace.forEach((k, v) -> {
             element1.addNamespace(k, v);
         });
-        if (!prefix.trim().equals("")) {
+        if (prefix != null && !prefix.trim().equals("")) {
             name = prefix + ":" + name;
         }
         element1.setName(name);
@@ -504,6 +514,12 @@ public class Word {
                     CoreProperties properties = fixElement(rootElement);
                     this.documentContent = properties;
                     inputStream = propertiesToStrem(properties);
+                }else if(entry.getName().endsWith("app.xml")){
+                    SAXReader reader = new SAXReader();
+                    Document document = reader.read(inputStream);
+                    Element rootElement = document.getRootElement();
+                    this.app = new App(rootElement);
+                    inputStream = propertiesToStrem(this.app.toCoreProperties());
                 }
                 int count;
                 byte[] dataByte = new byte[1024];
@@ -613,6 +629,10 @@ public class Word {
             Paragraph paragraph = new Paragraph();
             paragraph.setWordItem(wordItem);
             return appendParagraph(paragraph.toCoreProperties());
+        }else if (wordItem instanceof Paragraph) {
+            Paragraph p = (Paragraph) wordItem;
+            int length = p.getText().trim().length();
+            app.setWords(app.getWords()+length);
         }
 
         return appendParagraph(wordItem.toCoreProperties());
@@ -697,6 +717,25 @@ public class Word {
         coreProperties.addChild(sectPr);
 
         return this;
+    }
+
+    /**
+     * <p>统计word字数 不统计空格</p>
+     * @Description:
+     * @Author: wench
+     **/
+
+    public int countWords(){
+        return this.app.getWords();
+    }
+    public int countPages(){
+        return this.app.getPages();
+    }
+    public int countLines(){
+        return this.app.getLines();
+    }
+    public int countParagraphs(){
+        return this.app.getParagraphs();
     }
 
 }
