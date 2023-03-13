@@ -10,7 +10,7 @@ import java.util.List;
 public class Test {
 
     public static void main(String[] args) throws Exception {
-        a();
+//        a();
         b();
     }
     public static void b() throws Exception{
@@ -36,8 +36,8 @@ public class Test {
         /** 将段落 插入 word **/
         word.append(paragraph);
 
-        WordImage wordImage = new WordImage("e:/234.jpg");
-        word.append(wordImage);
+//        WordImage wordImage = new WordImage("e:/234.jpg");
+//        word.append(wordImage);
         /** 输出word **/
         word.toWord("d:\\zs4.docx");
     }

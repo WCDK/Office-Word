@@ -97,20 +97,34 @@ public class WordImage implements WordItem {
         CoreProperties nvPicPr = new CoreProperties("pic", "nvPicPr");
         CoreProperties cNvPr = new CoreProperties("pic", "cNvPr");
         cNvPr.addAttribute("id",this.id);
-        cNvPr.addAttribute("name",this.name);
+        cNvPr.addAttribute("name","Picture "+id);
         cNvPr.addAttribute("descr",this.descr);
 
         CoreProperties cNvPicPr = new CoreProperties("pic", "cNvPicPr");
         CoreProperties picLocks = new CoreProperties("a", "picLocks").addAttribute("noChangeAspect",this.noChangeAspect+"");
+        picLocks.addAttribute("noChangeArrowheads","1");
         cNvPicPr.addChild(picLocks);
         nvPicPr.addChild(cNvPr,cNvPicPr);
 
         CoreProperties blipFill = new CoreProperties("pic", "blipFill");
         CoreProperties blip = new CoreProperties("a", "blip").addAttribute("r:embed",this.embed);
+        blip.addAttribute("cstate","print");
+        CoreProperties extLst = new CoreProperties("a", "extLst");
+        CoreProperties ext1 = new CoreProperties("a", "ext");
+        ext1.addAttribute("uri",this.ext_uri);
+        CoreProperties useLocalDpi = new CoreProperties("a14", "useLocalDpi");
+        useLocalDpi.addAttribute("xmlns:a14","http://schemas.microsoft.com/office/drawing/2010/main");
+        useLocalDpi.addAttribute("val","0");
+        ext1.addChild(useLocalDpi);
+        extLst.addChild(ext1);
+        blip.addChild(extLst);
+
+        CoreProperties srcRect = new CoreProperties("a", "srcRect");
         CoreProperties stretch = new CoreProperties("a", "stretch");
         CoreProperties fillRect = new CoreProperties("a", "fillRect");
         stretch.addChild(fillRect);
-        blipFill.addChild(blip,stretch);
+
+        blipFill.addChild(blip,srcRect,stretch);
 
         CoreProperties spPr = new CoreProperties("pic", "spPr");
         CoreProperties xfrm = new CoreProperties("a", "xfrm");

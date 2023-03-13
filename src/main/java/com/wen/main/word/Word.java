@@ -1,8 +1,7 @@
 package com.wen.main.word;
 
-import com.wen.main.word.core.App;
-import com.wen.main.word.core.CoreProperties;
-import com.wen.main.word.core.WordItem;
+import com.wen.main.word.core.*;
+import com.wen.main.word.eunm.RelationshipType;
 import com.wen.main.word.image.WordImage;
 import com.wen.main.word.paragraph.Paragraph;
 import com.wen.main.word.table.WordTable;
@@ -12,8 +11,6 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultText;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
@@ -22,7 +19,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -65,11 +61,6 @@ public class Word {
      * <w:spacing  w:line="600" w:lineRule="auto"/> <!--设置行距，要进行运算，要用数字除以240，如此处为600/240=2.5倍行距-->
      *
      * ***/
-    private CoreProperties _rels_rels;
-    private CoreProperties docProps_app;
-    private CoreProperties docProps_core;
-    private CoreProperties docProps_custom;
-    private CoreProperties word_rels_document_xml;
     private CoreProperties word_theme_theme1;
     private CoreProperties word_fontTable;
     private CoreProperties word_endnotes;
@@ -80,6 +71,10 @@ public class Word {
     private CoreProperties Content_Types;
     private List<WordImage> wordImages = new ArrayList<>();
     private App app = new App();
+    private Rels rels = new Rels();
+    private Core core = new Core();
+    private Custom custom = new Custom();
+    private DocumentRels documentRels = new DocumentRels();
 
     transient String BASE_PATH = "";
     transient String TEMP_PATH = "";
@@ -108,25 +103,100 @@ public class Word {
         try {
             this.BASE_PATH = "";
             this.TEMP_PATH = "";
-            this._rels_rels = fixElement("wordSource/_rels/.rels");
-            this.docProps_app = fixElement("wordSource/docProps/app.xml");
-            this.docProps_core = fixElement("wordSource/docProps/core.xml");
-            this.docProps_custom = fixElement("wordSource/docProps/custom.xml");
-            this.word_rels_document_xml = fixElement("wordSource/word/_rels/document.xml.rels");
-            this.word_theme_theme1 = fixElement("wordSource/word/theme/theme1.xml");
+            this.rels = this.rels.create();
+            this.custom = this.custom.create();
+            this.documentRels = this.documentRels.create();
+            this.word_theme_theme1 = fixElement("wordSource/theme1.xml");
             this.documentContent = fixElement("wordSource/word/document.xml");
-            this.word_fontTable = fixElement("wordSource/word/fontTable.xml");
-            this.word_endnotes = fixElement("wordSource/word/endnotes.xml");
-            this.word_footnotes = fixElement("wordSource/word/footnotes.xml");
-            this.word_settings = fixElement("wordSource/word/settings.xml");
-            this.word_styles = fixElement("wordSource/word/styles.xml");
-            this.word_webSettings = fixElement("wordSource/word/webSettings.xml");
+            this.word_fontTable = fixElement("wordSource/fontTable.xml");
+            this.word_endnotes = fixElement("wordSource/endnotes.xml");
+            this.word_footnotes = fixElement("wordSource/footnotes.xml");
+            this.word_settings = fixElement("wordSource/settings.xml");
+            this.word_styles = fixElement("wordSource/styles.xml");
+            this.word_webSettings = fixElement("wordSource/webSettings.xml");
             this.Content_Types = fixElement("wordSource/[Content_Types].xml");
         }catch (Exception e){
             e.printStackTrace();
         }
 
         return this;
+    }
+
+    private void unzip(String filePath, String zipDir) {
+        String name = "";
+        try {
+            InputStream inputStream;
+
+            ZipEntry entry;
+            ZipFile zipfile = new ZipFile(filePath);
+            File file = new File(filePath);
+            name = file.getName();
+            name = name.substring(0, name.lastIndexOf("."));
+            zipDir = zipDir + name;
+            TEMP_PATH = zipDir;
+            file = new File(zipDir);
+
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            Enumeration dir = zipfile.entries();
+            while (dir.hasMoreElements()) {
+                entry = (ZipEntry) dir.nextElement();
+                if (entry.isDirectory()) {
+                    name = entry.getName();
+                    File fileObject = new File(zipDir + File.separator + name);
+                    fileObject.mkdir();
+                    continue;
+                }
+
+                file = new File(zipDir + File.separator + entry.getName());
+
+                if (file.isFile() || BASE_SIFFIX_LIST.contains(entry.getName().substring(entry.getName().lastIndexOf(".")))) {
+                    File parentFile = file.getParentFile();
+                    if (!parentFile.exists()) {
+                        parentFile.mkdirs();
+                    }
+                    file.delete();
+                    file.createNewFile();
+                }
+
+                inputStream = zipfile.getInputStream(entry);
+                if(!entry.getName().endsWith("jpeg")){
+                    SAXReader reader = new SAXReader();
+                    Document document = reader.read(inputStream);
+                    Element rootElement = document.getRootElement();
+                    if (entry.getName().endsWith("document.xml")) {
+                        CoreProperties properties = fixElement(rootElement);
+                        this.documentContent = properties;
+                    }else if(entry.getName().endsWith("app.xml")){
+                        this.app = new App(rootElement);
+                    }else if(entry.getName().equals("_rels/.rels")){
+                        this.rels = new Rels(rootElement);
+                    }else if(entry.getName().endsWith("core.xml")){
+                        this.core = new Core(rootElement);
+                    }else if(entry.getName().endsWith("custom.xml")){
+                        this.custom = new Custom(rootElement);
+                    }else if(entry.getName().endsWith("document.xml.rels")){
+                        this.documentRels = new DocumentRels(rootElement);
+                    }
+                }else {
+                    int count;
+                    byte[] dataByte = new byte[1024];
+                    try (FileOutputStream fos = new FileOutputStream(file)) {
+                        while ((count = inputStream.read(dataByte, 0, 1024)) != -1) {
+                            fos.write(dataByte, 0, count);
+                        }
+                    }
+                    inputStream.close();
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            Path zipPath = Paths.get(filePath);
+            zipPath.toFile().delete();
+        }
     }
 
     private void moveResource() {
@@ -170,7 +240,6 @@ public class Word {
             toWordNew(filePath);
         }
     }
-
     private void toWordDefult(String filePath) throws Exception{
         ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(filePath));
 
@@ -211,20 +280,20 @@ public class Word {
     }
     private void toWordNew(String filePath) throws Exception{
         ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(filePath));
-        InputStream inputStream = propertiesToStrem(this._rels_rels);
+
+        InputStream inputStream = propertiesToStrem(this.rels.toCoreProperties());
         write("_rels/.rels",inputStream,zipOutputStream);
 
-        this.docProps_app = this.app.toCoreProperties();
-        inputStream = propertiesToStrem(this.docProps_app);
+        inputStream = propertiesToStrem(this.app.toCoreProperties());
         write("docProps/app.xml",inputStream,zipOutputStream);
 
-        inputStream = propertiesToStrem(this.docProps_core);
+        inputStream = propertiesToStrem(this.core.toCoreProperties());
         write("docProps/core.xml",inputStream,zipOutputStream);
 
-        inputStream = propertiesToStrem(this.docProps_custom);
+        inputStream = propertiesToStrem(this.custom.toCoreProperties());
         write("docProps/custom.xml",inputStream,zipOutputStream);
 
-        inputStream = propertiesToStrem(this.word_rels_document_xml);
+        inputStream = propertiesToStrem(this.documentRels.toCoreProperties());
         write("word/_rels/document.xml.rels",inputStream,zipOutputStream);
 
         inputStream = propertiesToStrem(this.word_theme_theme1);
@@ -276,6 +345,7 @@ public class Word {
         }
         inputStream.close();
     }
+
     private InputStream propertiesToStrem(CoreProperties properties) throws Exception {
         Document document = DocumentHelper.createDocument();
 
@@ -317,11 +387,7 @@ public class Word {
         String name = properties.getName();
         String prefix = properties.getPrefix();
         String value = properties.getValue();
-        if ("lastModifiedBy".equalsIgnoreCase(properties.getName())) {
-            value = "WCDK";
-        } else if ("modified".equalsIgnoreCase(properties.getName())) {
-            value = properties.getTimeString();
-        }
+
         Element element1 = element.addElement(name);
         Map<String, String> nameSpace = properties.getNameSpace();
         nameSpace.forEach((k, v) -> {
@@ -469,75 +535,6 @@ public class Word {
         }
     }
 
-    private void unzip(String filePath, String zipDir) {
-        String name = "";
-        try {
-            InputStream inputStream;
-
-            ZipEntry entry;
-            ZipFile zipfile = new ZipFile(filePath);
-            File file = new File(filePath);
-            name = file.getName();
-            name = name.substring(0, name.lastIndexOf("."));
-            zipDir = zipDir + name;
-            TEMP_PATH = zipDir;
-            file = new File(zipDir);
-
-            if (!file.exists()) {
-                file.mkdirs();
-            }
-            Enumeration dir = zipfile.entries();
-            while (dir.hasMoreElements()) {
-                entry = (ZipEntry) dir.nextElement();
-                if (entry.isDirectory()) {
-                    name = entry.getName();
-                    File fileObject = new File(zipDir + File.separator + name);
-                    fileObject.mkdir();
-                    continue;
-                }
-
-                file = new File(zipDir + File.separator + entry.getName());
-
-                if (file.isFile() || BASE_SIFFIX_LIST.contains(entry.getName().substring(entry.getName().lastIndexOf(".")))) {
-                    File parentFile = file.getParentFile();
-                    if (!parentFile.exists()) {
-                        parentFile.mkdirs();
-                    }
-                    file.delete();
-                    file.createNewFile();
-                }
-                inputStream = zipfile.getInputStream(entry);
-                if (entry.getName().endsWith("document.xml")) {
-                    SAXReader reader = new SAXReader();
-                    Document document = reader.read(inputStream);
-                    Element rootElement = document.getRootElement();
-                    CoreProperties properties = fixElement(rootElement);
-                    this.documentContent = properties;
-                    inputStream = propertiesToStrem(properties);
-                }else if(entry.getName().endsWith("app.xml")){
-                    SAXReader reader = new SAXReader();
-                    Document document = reader.read(inputStream);
-                    Element rootElement = document.getRootElement();
-                    this.app = new App(rootElement);
-                    inputStream = propertiesToStrem(this.app.toCoreProperties());
-                }
-                int count;
-                byte[] dataByte = new byte[1024];
-                try (FileOutputStream fos = new FileOutputStream(file)) {
-                    while ((count = inputStream.read(dataByte, 0, 1024)) != -1) {
-                        fos.write(dataByte, 0, count);
-                    }
-                }
-                inputStream.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            Path zipPath = Paths.get(filePath);
-            zipPath.toFile().delete();
-        }
-    }
-
     public List<String> getAllTxt() throws Exception {
         SAXReader reader = new SAXReader();
         Document document = reader.read(new File(TEMP_PATH + File.separator + "word" + File.separator + "document.xml"));
@@ -639,27 +636,14 @@ public class Word {
     }
 
     private void addImage(WordImage image){
-        String type = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
-        List<CoreProperties> child = this.word_rels_document_xml.getChild();
-        CoreProperties coreProperties = child.stream().max(Comparator.comparing(x -> x.getAttribute().get("Id"))).get();
-        String rid = coreProperties.getAttribute().get("Id");
-        long i = Long.parseLong(rid.substring(3))+1;
 
-        List<CoreProperties> collect = child.stream().filter(e -> {
-            return e.getAttribute().get("Target").endsWith("jpeg");
-        }).collect(Collectors.toList());
-        int l = 0;
-        if(collect != null && collect.size() > 0){
-            CoreProperties coreProperties1 = collect.stream().max(Comparator.comparing(x -> x.getAttribute().get("Target"))).get();
-            String target = coreProperties1.getAttribute().get("Target");
-            l = Integer.parseInt(target.substring(11, target.indexOf(".")));
-        }
+        String newTarget = "media/"+this.documentRels.getNextImageName();
+        int id = this.documentRels.addRelationship(RelationshipType.image, newTarget);
 
-        String newTarget = "media/image"+(l+1)+".jpeg";
         image.setTarget(newTarget);
-        image.setId(String.valueOf(l+1));
-        image.setName("图片 "+String.valueOf(l+1));
-        image.setEmbed("rId"+i);
+        image.setId(String.valueOf(id));
+        image.setName("图片 "+id);
+        image.setEmbed("rId"+id);
 
         try{
 //            BufferedImage im = ImageIO.read(new FileInputStream(image.getPicSrc()));
@@ -681,12 +665,6 @@ public class Word {
             e.printStackTrace();
         }
 
-
-        CoreProperties newCor = new CoreProperties("","Relationship");
-        newCor.addAttribute("Id",image.getEmbed());
-        newCor.addAttribute("Type",type);
-        newCor.addAttribute("Target",image.getTarget());
-        child.add(newCor);
 
         this.wordImages.add(image);
 

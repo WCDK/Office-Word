@@ -85,7 +85,7 @@ public class CoreProperties implements Cloneable {
         }
         return this.child;
     }
-    public String getTimeString(){
+    public static String getTimeString(){
         String FORMAT_T = "yyyy-MM-dd'T'HH:mm:ss'Z'";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(FORMAT_T);
         return simpleDateFormat.format(new Date());

@@ -23,8 +23,8 @@ public class App implements WordItem{
     @Override
     public CoreProperties toCoreProperties() {
         CoreProperties properties = new CoreProperties(null,"Properties");
-        properties.addAttribute("xmlns","http://schemas.openxmlformats.org/officeDocument/2006/extended-properties");
-        properties.addAttribute("xmlns:vt","http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes");
+        properties.addNameSpace("","http://schemas.openxmlformats.org/officeDocument/2006/extended-properties");
+        properties.addNameSpace("vt","http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes");
         CoreProperties Template = new CoreProperties(null,"Template",this.template+"");
         CoreProperties Pages = new CoreProperties(null,"Pages",this.pages+"");
         CoreProperties Words = new CoreProperties(null,"Words",this.words+"");
