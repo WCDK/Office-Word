@@ -28,10 +28,10 @@ public class Rels implements WordItem{
     public Rels(){}
 
     public Rels create(){
-        Node node1 = new Node("http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties","docProps/app.xml","rId1");
+        Node node1 = new Node("http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties","docProps/app.xml","rId3");
         Node node2 = new Node("http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties","docProps/core.xml","rId2");
-        Node node3 = new Node("http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties","docProps/custom.xml","rId3");
-        Node node4 = new Node("http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument","word/document.xml","rId4");
+        Node node4 = new Node("http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument","word/document.xml","rId1");
+        Node node3 = new Node("http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties","docProps/custom.xml","rId4");
         elationships = new ArrayList<>();
         elationships.add(node1);
         elationships.add(node2);
@@ -41,11 +41,10 @@ public class Rels implements WordItem{
     }
 
     public Rels(Element element){
-        List<org.dom4j.Node> relationship = element.selectNodes("Relationship");
+        List<Element> relationship = element.elements("Relationship");
         elationships = new ArrayList<>();
         for (int i = 0;i < relationship.size();i++){
-            org.dom4j.Node node = relationship.get(i);
-            Element el = (Element) node;
+            Element el = relationship.get(i);
             Node relation = new Node();
             Class<? extends Node> aClass = relation.getClass();
             List<Attribute> attributes = el.attributes();

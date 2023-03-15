@@ -3,6 +3,11 @@ package com.wen.main.word.core;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dom4j.Element;
+import org.dom4j.Namespace;
+import org.dom4j.Node;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Data
@@ -43,16 +48,20 @@ public class App implements WordItem{
     }
 
     public App(Element element){
-        this.template = element.selectSingleNode("Template").getStringValue();
-        this.pages = Integer.parseInt(element.selectSingleNode("Pages").getStringValue());
-        this.words = Integer.parseInt(element.selectSingleNode("Words").getStringValue());
-        this.characters = Integer.parseInt(element.selectSingleNode("Characters").getStringValue());
-        this.lines = Integer.parseInt(element.selectSingleNode("Lines").getStringValue());
-        this.paragraphs = Integer.parseInt(element.selectSingleNode("Paragraphs").getStringValue());
-        this.totaltime = Integer.parseInt(element.selectSingleNode("TotalTime").getStringValue());
-        this.scalecrop = Boolean.getBoolean(element.selectSingleNode("ScaleCrop").getStringValue());
-        this.linksuptodate = Boolean.getBoolean(element.selectSingleNode("LinksUpToDate").getStringValue());
-        this.characterswithspaces = Integer.parseInt(element.selectSingleNode("CharactersWithSpaces").getStringValue());
-        this.docsecurity = Integer.parseInt(element.selectSingleNode("DocSecurity").getStringValue());
+        List<Node> content = element.content();
+        content.stream().filter(e->!(e instanceof Namespace)).collect(Collectors.toList()).forEach(e->{
+            Element a = (Element)e;System.out.println(a.getQualifiedName());
+        });
+        this.template = element.element("Template").getStringValue();
+        this.pages = Integer.parseInt(element.element("Pages").getStringValue());
+        this.words = Integer.parseInt(element.element("Words").getStringValue());
+        this.characters = Integer.parseInt(element.element("Characters").getStringValue());
+        this.lines = Integer.parseInt(element.element("Lines").getStringValue());
+        this.paragraphs = Integer.parseInt(element.element("Paragraphs").getStringValue());
+        this.totaltime = Integer.parseInt(element.element("TotalTime").getStringValue());
+        this.scalecrop = Boolean.getBoolean(element.element("ScaleCrop").getStringValue());
+        this.linksuptodate = Boolean.getBoolean(element.element("LinksUpToDate").getStringValue());
+        this.characterswithspaces = Integer.parseInt(element.element("CharactersWithSpaces").getStringValue());
+        this.docsecurity = Integer.parseInt(element.element("DocSecurity").getStringValue());
     }
 }

@@ -48,10 +48,9 @@ public class Custom implements WordItem{
 
         this.propertyxmlns = element.getNamespaceForPrefix("").getStringValue();
         this.propertyxmlns = element.getNamespaceForPrefix("vt").getStringValue();
-        List<Node> property = element.selectNodes("property");
-        for(Node node : property){
+        List<Element> property = element.elements("property");
+        for(Element e : property){
             Property property1 = new Property();
-            Element e = (Element) node;
             property1.setFmtid(e.attribute("fmtid").getStringValue());
             property1.setName(e.attribute("name").getStringValue());
             property1.setPid(e.attribute("pid").getStringValue());

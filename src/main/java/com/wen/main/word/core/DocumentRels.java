@@ -42,12 +42,12 @@ public class DocumentRels implements WordItem{
     }
     public DocumentRels create(){
         Node style = new Node(RelationshipType.styles,"styles.xml","rId"+1);
-        Node settings = new Node(RelationshipType.settings,"styles.xml","rId"+2);
-        Node webSettings = new Node(RelationshipType.webSettings,"styles.xml","rId"+3);
-        Node footnotes = new Node(RelationshipType.footnotes,"styles.xml","rId"+4);
-        Node endnotes = new Node(RelationshipType.endnotes,"styles.xml","rId"+5);
-        Node fontTable = new Node(RelationshipType.fontTable,"styles.xml","rId"+6);
-        Node theme = new Node(RelationshipType.theme,"styles.xml","rId"+7);
+        Node settings = new Node(RelationshipType.settings,"settings.xml","rId"+2);
+        Node webSettings = new Node(RelationshipType.webSettings,"webSettings.xml","rId"+3);
+        Node footnotes = new Node(RelationshipType.footnotes,"footnotes.xml","rId"+4);
+        Node endnotes = new Node(RelationshipType.endnotes,"endnotes.xml","rId"+5);
+        Node fontTable = new Node(RelationshipType.fontTable,"fontTable.xml","rId"+6);
+        Node theme = new Node(RelationshipType.theme,"theme/theme1.xml","rId"+7);
         relationships.add(style);
         relationships.add(settings);
         relationships.add(webSettings);
@@ -98,7 +98,7 @@ public class DocumentRels implements WordItem{
             CoreProperties rela = new CoreProperties(null,"Relationship");
             rela.addAttribute("Type",relationshipType.getValue());
             rela.addAttribute("Target",this.getTarget());
-            rela.addAttribute("id",this.rId);
+            rela.addAttribute("Id",this.rId);
             return rela;
         }
     }

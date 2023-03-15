@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -107,7 +108,7 @@ public class Word {
             this.custom = this.custom.create();
             this.documentRels = this.documentRels.create();
             this.word_theme_theme1 = fixElement("wordSource/theme1.xml");
-            this.documentContent = fixElement("wordSource/word/document.xml");
+            this.documentContent = fixElement("wordSource/document.xml");
             this.word_fontTable = fixElement("wordSource/fontTable.xml");
             this.word_endnotes = fixElement("wordSource/endnotes.xml");
             this.word_footnotes = fixElement("wordSource/footnotes.xml");
@@ -178,7 +179,18 @@ public class Word {
                         this.custom = new Custom(rootElement);
                     }else if(entry.getName().endsWith("document.xml.rels")){
                         this.documentRels = new DocumentRels(rootElement);
+                    }else {
+                        inputStream = zipfile.getInputStream(entry);
+                        int count;
+                        byte[] dataByte = new byte[1024];
+                        try (FileOutputStream fos = new FileOutputStream(file)) {
+                            while ((count = inputStream.read(dataByte, 0, 1024)) != -1) {
+                                fos.write(dataByte, 0, count);
+                            }
+                        }
+                        inputStream.close();
                     }
+
                 }else {
                     int count;
                     byte[] dataByte = new byte[1024];
@@ -250,13 +262,17 @@ public class Word {
         for (String path : paths) {
             InputStream inputStream = new FileInputStream(BASE_PATH + path);
             if (path.endsWith("core.xml")) {
-                SAXReader reader = new SAXReader();
-                Document document = reader.read(inputStream);
-                Element rootElement = document.getRootElement();
-                CoreProperties properties = fixElement(rootElement);
-                inputStream = propertiesToStrem(properties);
-            } else if (path.endsWith("document.xml")) {
+                inputStream = propertiesToStrem(this.core.toCoreProperties());
+            }else if (path.endsWith("document.xml")) {
                 inputStream = propertiesToStrem(this.documentContent);
+            }else if (path.endsWith("app.xml")) {
+                inputStream = propertiesToStrem(this.app.toCoreProperties());
+            }else if (path.endsWith("document.xml.rels")) {
+                inputStream = propertiesToStrem(this.documentRels.toCoreProperties());
+            }else if (path.endsWith(".rels")) {
+                inputStream = propertiesToStrem(this.rels.toCoreProperties());
+            }else if (path.endsWith("custom.xml")) {
+                inputStream = propertiesToStrem(this.custom.toCoreProperties());
             }
             path = path.substring(path.indexOf(File.separator) + 1);
             zipOutputStream.putNextEntry(new ZipEntry(path));
@@ -353,8 +369,16 @@ public class Word {
         if (properties.getPrefix() != null && !properties.getPrefix().trim().equals("")) {
             rootName = properties.getPrefix() + ":" + rootName;
         }
-        Element recordNode = document.addElement(rootName);
         Map<String, String> nameSpace = properties.getNameSpace();
+        String xmlns = nameSpace.get("");
+        Element cuNode = null;
+        if(xmlns != null){
+            cuNode = document.addElement(rootName,xmlns);
+            nameSpace.remove("");
+        }else {
+            cuNode = document.addElement(rootName);
+        }
+        Element recordNode= cuNode;
         if(nameSpace != null && nameSpace.size() > 0){
             nameSpace.forEach((k, v) -> {
                 recordNode.addNamespace(k, v);
@@ -367,7 +391,7 @@ public class Word {
         List<CoreProperties> child = properties.getChild();
         for (int i = 0; i < child.size(); i++) {
             CoreProperties coreProperties = child.get(i);
-            stream(coreProperties, recordNode);
+            stream(coreProperties, recordNode,xmlns);
         }
 
         OutputFormat format = OutputFormat.createPrettyPrint();
@@ -383,20 +407,31 @@ public class Word {
         return bufferedInputStream;
     }
 
-    private void stream(CoreProperties properties, Element element) {
+    private void stream(CoreProperties properties, Element element,String xmlns) {
         String name = properties.getName();
         String prefix = properties.getPrefix();
         String value = properties.getValue();
-
-        Element element1 = element.addElement(name);
         Map<String, String> nameSpace = properties.getNameSpace();
-        nameSpace.forEach((k, v) -> {
-            element1.addNamespace(k, v);
-        });
+
+
+        Element elementt = null;
+        if(xmlns != null){
+            elementt = element.addElement(name,xmlns);
+        }else {
+            elementt = element.addElement(name);
+        }
         if (prefix != null && !prefix.trim().equals("")) {
             name = prefix + ":" + name;
+            elementt.setName(name);
         }
-        element1.setName(name);
+        Element element1 = elementt;
+        if(nameSpace != null && nameSpace.size() > 0){
+            nameSpace.forEach((k, v) -> {
+                element1.addNamespace(k, v);
+            });
+        }
+
+
         Map<String, String> attribute = properties.getAttribute();
         if(attribute != null && attribute.size() > 0){
             attribute.forEach((k, v) -> {
@@ -409,7 +444,7 @@ public class Word {
         List<CoreProperties> child = properties.getChild();
         for (int i = 0; i < child.size(); i++) {
             CoreProperties coreProperties = child.get(i);
-            stream(coreProperties, element1);
+            stream(coreProperties, element1,xmlns);
         }
     }
 
@@ -630,6 +665,8 @@ public class Word {
             Paragraph p = (Paragraph) wordItem;
             int length = p.getText().trim().length();
             app.setWords(app.getWords()+length);
+            app.setCharacters(p.getText().length());
+            app.setCharacterswithspaces(p.getText().length());
         }
 
         return appendParagraph(wordItem.toCoreProperties());
@@ -704,6 +741,18 @@ public class Word {
      **/
 
     public int countWords(){
+        try{
+            List<String> allTxt = getAllTxt();
+            String collect = allTxt.stream().collect(Collectors.joining());
+            int length = collect.length();
+            this.app.setCharacters(length);
+            this.app.setCharacterswithspaces(length);
+            int length1 = collect.replaceAll(" ", "").length();
+            this.app.setWords(length1);
+        }catch (Exception e){
+         e.printStackTrace();
+        }
+
         return this.app.getWords();
     }
     public int countPages(){

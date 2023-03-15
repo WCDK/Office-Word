@@ -12,7 +12,7 @@ public enum RelationshipType {
     footer("http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer"),
     header("http://schemas.openxmlformats.org/officeDocument/2006/relationships/header"),
     settings("http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings"),
-    webSettings("Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings"),
+    webSettings("http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings"),
     styles("http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles");
     private String value;
 
