@@ -33,12 +33,12 @@
             xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
             xmlns:wpsCustomData="http://www.wps.cn/officeDocument/2013/wpsCustomData" mc:Ignorable="w14 w15 wp14">
     <w:body>
-        <w:sectPr w:rsidR="000E3B32">
+        <w:sectPr>
             <w:pgSz w:w="11906" w:h="16838"/>
             <w:pgMar w:top="1440" w:right="1800" w:bottom="1440" w:left="1800" w:header="851" w:footer="992"
                      w:gutter="0"/>
-            <w:cols w:space="425"/>
-            <w:docGrid w:type="lines" w:linePitch="312"/>
+            <w:cols w:space="425" w:num="1"/>
+            <w:docGrid w:type="lines" w:linePitch="312" w:charSpace="0"/>
         </w:sectPr>
     </w:body>
 </w:document>

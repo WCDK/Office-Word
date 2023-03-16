@@ -29,9 +29,8 @@ public class DocumentRels implements WordItem{
     public DocumentRels(){}
     public DocumentRels(Element element){
         this.xmlns = element.getNamespaceForPrefix("").getStringValue();
-        List<org.dom4j.Node> relationship = element.selectNodes("Relationship");
-        for(org.dom4j.Node  node : relationship){
-            Element e = (Element) node;
+        List<Element> relationship = element.elements("Relationship");
+        for(Element  e : relationship){
             RelationshipType type = RelationshipType.getTyppe(e.attribute("Type").getStringValue());
             String target = e.attribute("Target").getStringValue();
             String id = e.attribute("Id").getStringValue();

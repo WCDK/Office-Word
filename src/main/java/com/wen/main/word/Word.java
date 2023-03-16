@@ -169,6 +169,15 @@ public class Word {
                     if (entry.getName().endsWith("document.xml")) {
                         CoreProperties properties = fixElement(rootElement);
                         this.documentContent = properties;
+                        inputStream = zipfile.getInputStream(entry);
+                        int count;
+                        byte[] dataByte = new byte[1024];
+                        try (FileOutputStream fos = new FileOutputStream(file)) {
+                            while ((count = inputStream.read(dataByte, 0, 1024)) != -1) {
+                                fos.write(dataByte, 0, count);
+                            }
+                        }
+                        inputStream.close();
                     }else if(entry.getName().endsWith("app.xml")){
                         this.app = new App(rootElement);
                     }else if(entry.getName().equals("_rels/.rels")){
