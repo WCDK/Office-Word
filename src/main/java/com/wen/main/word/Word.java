@@ -687,7 +687,8 @@ public class Word {
         int id = this.documentRels.addRelationship(RelationshipType.image, newTarget);
 
         image.setTarget(newTarget);
-        image.setId(String.valueOf(id));
+//        image.setId(String.valueOf(id));
+        image.setId(String.valueOf(wordImages.size()));
         image.setName("图片 "+id);
         image.setEmbed("rId"+id);
 
@@ -700,12 +701,12 @@ public class Word {
             file = null;
             descr = descr.substring(0,descr.lastIndexOf("."));
             image.setDescr(descr);
-            image.setExtent_cx(5266690);
-            image.setExtent_cy(3107690);
-            image.setDist_l(114300);
-            image.setDist_r(114300);
-            image.setExtent_r(10160);
-            image.setExtent_b(16510);
+            image.setExtent_cx(5274310);
+            image.setExtent_cy(3110865);
+//            image.setDist_l(114300);
+//            image.setDist_r(114300);
+            image.setExtent_r(2540);
+//            image.setExtent_b(16510);
 //            im.flush();
         }catch (Exception e){
             e.printStackTrace();

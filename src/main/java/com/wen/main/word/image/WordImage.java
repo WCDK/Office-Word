@@ -90,13 +90,13 @@ public class WordImage implements WordItem {
     }
 
     private CoreProperties buildGraphic() {
-        CoreProperties graphic = new CoreProperties("wp", "graphic").addAttribute("xmlns:a", this.xmlns_a);
+        CoreProperties graphic = new CoreProperties("a", "graphic").addAttribute("xmlns:a", this.xmlns_a);
         CoreProperties graphicData = new CoreProperties("a", "graphicData").addAttribute("uri", this.uri);
         CoreProperties pic = new CoreProperties("pic", "pic").addAttribute("xmlns:pic", this.pic);
 
         CoreProperties nvPicPr = new CoreProperties("pic", "nvPicPr");
         CoreProperties cNvPr = new CoreProperties("pic", "cNvPr");
-        cNvPr.addAttribute("id",this.id);
+        cNvPr.addAttribute("id",String.valueOf(Integer.parseInt(this.id)+1));
         cNvPr.addAttribute("name","Picture "+id);
         cNvPr.addAttribute("descr",this.descr);
 
