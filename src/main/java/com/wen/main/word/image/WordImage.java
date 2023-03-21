@@ -4,6 +4,8 @@ import com.wen.main.word.core.CoreProperties;
 import com.wen.main.word.core.WordItem;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.dom4j.Attribute;
+import org.dom4j.Element;
 
 
 @AllArgsConstructor
@@ -47,6 +49,18 @@ public class WordImage implements WordItem {
 
     public WordImage(String src){
         this.picSrc = src;
+    }
+
+    public WordImage(Element element){
+        Element inline = element.element("inline");
+        this.dist_t = Integer.parseInt(inline.attribute("distT").getStringValue());
+        this.dist_b = Integer.parseInt(inline.attribute("distB").getStringValue());
+        this.dist_l = Integer.parseInt(inline.attribute("distL").getStringValue());
+        this.dist_r = Integer.parseInt(inline.attribute("distR").getStringValue());
+
+        Element extent = inline.element("extent");
+        this.extent_cx = Integer.parseInt(extent.attribute("cx").getStringValue());
+        this.extent_cy = Integer.parseInt(extent.attribute("cy").getStringValue());
     }
 
     @Override

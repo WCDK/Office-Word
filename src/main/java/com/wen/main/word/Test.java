@@ -8,14 +8,14 @@ import com.wen.main.word.paragraph.Paragraph;
 public class Test {
 
     public static void main(String[] args) throws Exception {
-        int i = MyUnits.pxToEMU(4096);
-        System.out.println(i);
-        a();
-//        b();
+//        int i = MyUnits.pxToEMU(4096);
+//        System.out.println(i);
+//        a();
+        b();
     }
     public static void b() throws Exception{
         Word word = new Word();
-        word.loadWord("d:\\zs3.docx");
+        word.loadWord("d:\\zs4.docx");
         word.toWord("d:\\zs5.docx");
         System.out.println(word.countWords());
     }
@@ -37,7 +37,7 @@ public class Test {
         /** 将段落 插入 word **/
         word.append(paragraph);
 
-        WordImage wordImage = new WordImage("E:\\2\\3.jpg");
+        WordImage wordImage = new WordImage("E:\\3.jpg");
 //        WordImage wordImage = new WordImage("e:/234.jpg");
         word.append(wordImage);
         /** 输出word **/

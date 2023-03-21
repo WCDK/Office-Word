@@ -49,9 +49,6 @@ public class App implements WordItem{
 
     public App(Element element){
         List<Node> content = element.content();
-        content.stream().filter(e->!(e instanceof Namespace)).collect(Collectors.toList()).forEach(e->{
-            Element a = (Element)e;System.out.println(a.getQualifiedName());
-        });
         this.template = element.element("Template").getStringValue();
         this.pages = Integer.parseInt(element.element("Pages").getStringValue());
         this.words = Integer.parseInt(element.element("Words").getStringValue());

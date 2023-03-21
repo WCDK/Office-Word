@@ -1,10 +1,14 @@
 package com.wen.main.word.core;
 
 import com.wen.main.word.core.eunm.PaperType;
+import com.wen.main.word.image.WordImage;
+import lombok.Data;
+import org.dom4j.Element;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 public class DocumentContent {
     String wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas";
     String cx="http://schemas.microsoft.com/office/drawing/2014/chartex";
@@ -44,8 +48,25 @@ public class DocumentContent {
     List<WordItem> wordItems = new ArrayList<>();
     SectPr sectPr = new SectPr(PaperType.A4);
 
+    public DocumentContent(){}
+
+    public DocumentContent(Element element){
+        Element body = element.element("body");
+        List<Element> ps = body.elements("p");
+        for(Element p :ps){
+            Element r = p.element("r");
+            Element drawing = r.element("drawing");
+            if(drawing != null){
+                WordImage wordImage = new WordImage(drawing);
+            }
+        }
+
+        System.out.printf("");
+    }
+
     public CoreProperties toCoreProperties(){
         CoreProperties doc = new CoreProperties("w","document");
+        CoreProperties body = new CoreProperties("w","body");
 
         doc.addAttribute("xmlns:wpc",wpc);
         doc.addAttribute("xmlns:cx",cx);
@@ -57,15 +78,17 @@ public class DocumentContent {
         doc.addAttribute("xmlns:cx6",cx6);
         doc.addAttribute("xmlns:cx7",cx7);
         doc.addAttribute("xmlns:cx8",cx8);
+
         doc.addAttribute("xmlns:mc",mc);
         doc.addAttribute("xmlns:aink",aink);
-
         doc.addAttribute("xmlns:am3d",am3d);
         doc.addAttribute("xmlns:o",o);
         doc.addAttribute("xmlns:r",r);
         doc.addAttribute("xmlns:m",m);
         doc.addAttribute("xmlns:wp14",wp14);
+        doc.addAttribute("xmlns:wp",wp);
         doc.addAttribute("xmlns:w10",w10);
+
         doc.addAttribute("xmlns:w",w);
         doc.addAttribute("xmlns:w14",w14);
         doc.addAttribute("xmlns:w15",w15);
@@ -75,16 +98,18 @@ public class DocumentContent {
         doc.addAttribute("xmlns:w16sdtdh",w16sdtdh);
         doc.addAttribute("xmlns:w16se",w16se);
         doc.addAttribute("xmlns:wpg",wpg);
+
         doc.addAttribute("xmlns:wpi",wpi);
         doc.addAttribute("xmlns:wne",wne);
         doc.addAttribute("xmlns:wps",wps);
-        doc.addAttribute("xmlns:wpc",Ignorable);
+        doc.addAttribute("mc",Ignorable);
         if(wordItems.size() > 0){
             wordItems.forEach(e->{
-                doc.addChild(e.toCoreProperties());
+                body.addChild(e.toCoreProperties());
             });
         }
-        doc.addChild(sectPr.toCoreProperties());
+        body.addChild(sectPr.toCoreProperties());
+        doc.addChild(body);
         return doc;
     }
 

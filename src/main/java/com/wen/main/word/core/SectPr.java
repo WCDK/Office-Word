@@ -32,11 +32,11 @@ public class SectPr implements WordItem {
     }
 
     SectPr(Element element) {
-        Element ce = element.element("w:pgSz");
+        Element ce = element.element("pgSz");
         this.w = Integer.parseInt(ce.attribute("w:w").getStringValue());
         this.h = Integer.parseInt(ce.attribute("w:h").getStringValue());
 
-        ce = element.element("w:pgMar");
+        ce = element.element("pgMar");
         this.margin_top = Integer.parseInt(ce.attribute("w:top").getStringValue());
         this.margin_right = Integer.parseInt(ce.attribute("w:right").getStringValue());
         this.margin_bottom = Integer.parseInt(ce.attribute("w:bottom").getStringValue());
@@ -45,10 +45,10 @@ public class SectPr implements WordItem {
         this.margin_footer= Integer.parseInt(ce.attribute("w:footer").getStringValue());
         this.margin_gutter= Integer.parseInt(ce.attribute("w:gutter").getStringValue());
 
-        ce = element.element("w:cols");
+        ce = element.element("cols");
         this.space = Integer.parseInt(ce.attribute("w:space").getStringValue());
 
-        ce = element.element("w:docGrid");
+        ce = element.element("docGrid");
         this.grid_type = ce.attribute("w:type").getStringValue();
         this.linePitch = Integer.parseInt(ce.attribute("w:linePitch").getStringValue());
 
