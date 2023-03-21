@@ -1,7 +1,7 @@
 package com.wen.main.word;
 
 import com.wen.main.word.core.*;
-import com.wen.main.word.eunm.RelationshipType;
+import com.wen.main.word.core.eunm.RelationshipType;
 import com.wen.main.word.image.WordImage;
 import com.wen.main.word.paragraph.Paragraph;
 import com.wen.main.word.table.WordTable;
@@ -11,6 +11,8 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultText;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
@@ -693,21 +695,20 @@ public class Word {
         image.setEmbed("rId"+id);
 
         try{
-//            BufferedImage im = ImageIO.read(new FileInputStream(image.getPicSrc()));
-//            image.setWidth(im.getWidth());
-//            image.setHeight(im.getHeight());
             File file = new File(image.getPicSrc());
+            BufferedImage bufferedImage = ImageIO.read(new FileInputStream(file));
+            int width = bufferedImage.getWidth();
+            int height = bufferedImage.getHeight();
             String descr = file.getName();
-            file = null;
             descr = descr.substring(0,descr.lastIndexOf("."));
             image.setDescr(descr);
-            image.setExtent_cx(5274310);
-            image.setExtent_cy(3110865);
-//            image.setDist_l(114300);
-//            image.setDist_r(114300);
+            image.setExtent_cx(width/20/72*914400);
+            image.setExtent_cy(height/20/72*914400);
+//            image.setExtent_cx(5274310);
+//            image.setExtent_cy(3110865);
             image.setExtent_r(2540);
-//            image.setExtent_b(16510);
-//            im.flush();
+            bufferedImage.flush();
+            file = null;
         }catch (Exception e){
             e.printStackTrace();
         }

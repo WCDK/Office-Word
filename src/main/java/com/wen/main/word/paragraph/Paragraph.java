@@ -2,6 +2,7 @@ package com.wen.main.word.paragraph;
 
 import com.wen.main.word.core.CoreProperties;
 import com.wen.main.word.core.WordItem;
+import com.wen.main.word.core.eunm.Algin;
 import lombok.Data;
 
 @Data
@@ -14,7 +15,7 @@ public class Paragraph implements WordItem {
     String fontColor;
     String style;
     String bidi;
-    String algin;
+    Algin algin;
     String highlight;
     @Override
     public CoreProperties toCoreProperties() {
@@ -33,7 +34,7 @@ public class Paragraph implements WordItem {
             r.addChild(rPr);
 
             if(this.algin != null){
-                CoreProperties jc = new CoreProperties("w","jc").addAttribute("w:val",this.algin);
+                CoreProperties jc = new CoreProperties("w","jc").addAttribute("w:val",this.algin.getCode());
                 pPr.addChild(jc);
             }
             if(this.fontColor != null){

@@ -1,11 +1,10 @@
 package com.wen.main.word.core;
 
-import com.wen.main.word.eunm.RelationshipType;
+import com.wen.main.word.core.eunm.RelationshipType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dom4j.Element;
-import org.dom4j.Node;
 
 import java.util.ArrayList;
 import java.util.Comparator;

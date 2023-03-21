@@ -1,11 +1,9 @@
 package com.wen.main.word;
 
-import com.wen.main.word.eunm.Color;
+import com.wen.main.word.core.eunm.Algin;
+import com.wen.main.word.core.eunm.Color;
 import com.wen.main.word.image.WordImage;
 import com.wen.main.word.paragraph.Paragraph;
-import com.wen.main.word.table.WordTable;
-
-import java.util.List;
 
 public class Test {
 
@@ -33,7 +31,7 @@ public class Test {
         /**段落 字体 红色 **/
         paragraph.setFontColor(Color.red.getCode());
         /** 段落 样式 居中 **/
-        paragraph.setAlgin("center");
+        paragraph.setAlgin(Algin.center);
         /** 将段落 插入 word **/
         word.append(paragraph);
 
