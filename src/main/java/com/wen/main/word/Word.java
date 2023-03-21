@@ -14,6 +14,7 @@ import org.dom4j.tree.DefaultText;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -28,42 +29,6 @@ import java.util.zip.ZipOutputStream;
 
 public class Word {
 
-    /***
-     *
-     * <w:p> <!--表示一个段落-->
-     * <w:val > <!--表示一个值-->
-     * <w:r> <!--表示一个样式串，指明它包括的文本的显示样式，表示一个特定的文本格式-->
-     * <w:t> <!--表示真正的文本内容-->
-     * <w:rPr> <!--是<w:r>标签内的标签，对Run文本属性进行修饰-->
-     * <w:pPr> <!--是<w:p>标签内的标签，对Paragraph文本属性进行修饰-->
-     * <w:rFronts> <!--字体-->
-     * <w:hdr> <!--页眉-->
-     * <w:ftr> <!--页脚-->
-     * <w:drawing > <!--图片-->
-     * <wp:extent> <!--绘图对象大小-->
-     * <wp:effectExtent > <!--嵌入图形的效果-->
-     * <wp:inline  > <!--内嵌绘图对象，dist(T,B,L，R)距离文本上下左右的距离-->
-     * <w:noProof  > <!--不检查拼写和语法错误-->
-     * <w:docPr> <!--表示文档属性-->
-     * <w:rsidR> <!--指定唯一一个标识符，用来跟踪编辑在修订时表行标识，所有段落和段落中的内容都应该拥有相同的属性值，如果出现差异，那么表示这个段落在后面的编辑中被修改。-->
-     * <w:r> <!--表示关系，段落中以相连续的中文或英文字符字符串，作为开始和结束。目的就是要把一个段落中的中英文字符区分开来。 -->
-     * <w:ind> <!--w:pPr元素的子元素，跟w:pStyle并列，ind代表缩进情况：有几个属性值：①firstLine（首行缩进）②left（左缩进）③当left和firstLine同时出现时代表下面的元素有两种属性首行和下面其他行都是有属性的④hanging（悬挂）-->
-     * <w:hint> <!--字体的类型，w:rFonts的子元素，属性值eastAsia表面上的意思是“东亚”，指代“中日韩CJK”类型。-->
-     * <w:bCs> <!--复合字体的加粗-->
-     * <w:bookmarkStart> <!--书签开始-->
-     * <w:bookmarkEnd> <!--书签结束-->
-     * <w:lastRenderedPageBreak > <!--页面进行分页的标记，是w:r的一个属性，表示此段字符串是一页中的最后一个字符串。-->
-     * <w:smartTag > <!--智能标记-->
-     * <w:attr  > <!--自定义XML属性-->
-     *
-     * <w:b w:val=”on”> <!--表示该格式串种的文本为粗体-->
-     * <w:jc w:val="right"/> <!--表示对齐方式-->
-     * <w:sz w:val="40"/> <!--表示字号大小-->
-     * <w:szCs w:val="40"/> <!---->
-     * <w:t xml:space="preserve"> <!--保持空格，如果没有这内容的话，文本的前后空格将会被Word忽略-->
-     * <w:spacing  w:line="600" w:lineRule="auto"/> <!--设置行距，要进行运算，要用数字除以240，如此处为600/240=2.5倍行距-->
-     *
-     * ***/
     private CoreProperties word_theme_theme1;
     private CoreProperties word_fontTable;
     private CoreProperties word_endnotes;
@@ -94,8 +59,9 @@ public class Word {
 
     public void loadWord(String wordPath) throws Exception {
         Path docPath = Paths.get(wordPath);
-        String s = docPath.getFileName().toString();
-        String zipUrl = BASE_PATH + File.separator + s.substring(0, s.lastIndexOf(".")) + ".zip";
+//        String s = docPath.getFileName().toString();
+        long l = System.currentTimeMillis();
+        String zipUrl = BASE_PATH + File.separator + l + ".zip";
         Path zipPath = Paths.get(zipUrl);
         zipPath.toFile().delete();
         Files.copy(docPath, zipPath);
@@ -699,11 +665,15 @@ public class Word {
             BufferedImage bufferedImage = ImageIO.read(new FileInputStream(file));
             int width = bufferedImage.getWidth();
             int height = bufferedImage.getHeight();
+            double x = width * 25.4 * 9525;
+            double y = height * 25.4 * 9525;
+            int cx = BigDecimal.valueOf(x).intValue();
+            int cy = BigDecimal.valueOf(y).intValue();
             String descr = file.getName();
             descr = descr.substring(0,descr.lastIndexOf("."));
             image.setDescr(descr);
-            image.setExtent_cx(width/20/72*914400);
-            image.setExtent_cy(height/20/72*914400);
+            image.setExtent_cx(cx);
+            image.setExtent_cy(cy);
 //            image.setExtent_cx(5274310);
 //            image.setExtent_cy(3110865);
             image.setExtent_r(2540);

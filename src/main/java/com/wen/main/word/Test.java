@@ -8,6 +8,8 @@ import com.wen.main.word.paragraph.Paragraph;
 public class Test {
 
     public static void main(String[] args) throws Exception {
+        int i = MyUnits.pxToEMU(4096);
+        System.out.println(i);
         a();
 //        b();
     }
@@ -35,7 +37,8 @@ public class Test {
         /** 将段落 插入 word **/
         word.append(paragraph);
 
-        WordImage wordImage = new WordImage("e:/234.jpg");
+        WordImage wordImage = new WordImage("E:\\2\\3.jpg");
+//        WordImage wordImage = new WordImage("e:/234.jpg");
         word.append(wordImage);
         /** 输出word **/
         word.toWord("d:\\zs4.docx");
