@@ -683,8 +683,12 @@ public class Word {
 
     public Word append(WordItem wordItem) {
         if (wordItem instanceof WordImage) {
-            addImage((WordImage) wordItem);
+            WordImage image = (WordImage) wordItem;
+            addImage(image);
             Paragraph paragraph = new Paragraph();
+            if(image.getAlgin() != null){
+                paragraph.setAlgin(image.getAlgin());
+            }
             paragraph.setWordItem(wordItem);
             return appendParagraph(paragraph);
         } else if (wordItem instanceof Paragraph) {

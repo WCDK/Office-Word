@@ -10,8 +10,8 @@ public class Test {
     public static void main(String[] args) throws Exception {
 //        int i = MyUnits.pxToEMU(4096);
 //        System.out.println(i);
-//        a();
-        b();
+        a();
+//        b();
     }
     public static void b() throws Exception{
         Word word = new Word();
@@ -37,7 +37,8 @@ public class Test {
         /** 将段落 插入 word **/
         word.append(paragraph);
 
-        WordImage wordImage = new WordImage("E:\\3.jpg");
+        WordImage wordImage = new WordImage("E:\\2\\3.jpg");
+        wordImage.setAlgin(Algin.center);
 //        WordImage wordImage = new WordImage("e:/234.jpg");
         word.append(wordImage);
         /** 输出word **/

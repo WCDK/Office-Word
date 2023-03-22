@@ -2,6 +2,7 @@ package com.wen.main.word.image;
 
 import com.wen.main.word.core.CoreProperties;
 import com.wen.main.word.core.WordItem;
+import com.wen.main.word.core.eunm.Algin;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.dom4j.Attribute;
@@ -46,6 +47,7 @@ public class WordImage implements WordItem {
     String target;
     String picSrc;
     String prst = "rect";
+    Algin algin;
 
     public WordImage(String src){
         this.picSrc = src;
