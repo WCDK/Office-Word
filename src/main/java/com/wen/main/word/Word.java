@@ -1,7 +1,8 @@
 package com.wen.main.word;
 
-import com.wen.main.word.core.CoreProperties;
-import com.wen.main.word.core.WordItem;
+import com.wen.main.word.core.*;
+import com.wen.main.word.core.eunm.RelationshipType;
+import com.wen.main.word.image.WordImage;
 import com.wen.main.word.paragraph.Paragraph;
 import com.wen.main.word.table.WordTable;
 import org.dom4j.*;
@@ -10,7 +11,10 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultText;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -18,64 +22,34 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 public class Word {
 
-    /***
-     *
-     * <w:p> <!--表示一个段落-->
-     * <w:val > <!--表示一个值-->
-     * <w:r> <!--表示一个样式串，指明它包括的文本的显示样式，表示一个特定的文本格式-->
-     * <w:t> <!--表示真正的文本内容-->
-     * <w:rPr> <!--是<w:r>标签内的标签，对Run文本属性进行修饰-->
-     * <w:pPr> <!--是<w:p>标签内的标签，对Paragraph文本属性进行修饰-->
-     * <w:rFronts> <!--字体-->
-     * <w:hdr> <!--页眉-->
-     * <w:ftr> <!--页脚-->
-     * <w:drawing > <!--图片-->
-     * <wp:extent> <!--绘图对象大小-->
-     * <wp:effectExtent > <!--嵌入图形的效果-->
-     * <wp:inline  > <!--内嵌绘图对象，dist(T,B,L，R)距离文本上下左右的距离-->
-     * <w:noProof  > <!--不检查拼写和语法错误-->
-     * <w:docPr> <!--表示文档属性-->
-     * <w:rsidR> <!--指定唯一一个标识符，用来跟踪编辑在修订时表行标识，所有段落和段落中的内容都应该拥有相同的属性值，如果出现差异，那么表示这个段落在后面的编辑中被修改。-->
-     * <w:r> <!--表示关系，段落中以相连续的中文或英文字符字符串，作为开始和结束。目的就是要把一个段落中的中英文字符区分开来。 -->
-     * <w:ind> <!--w:pPr元素的子元素，跟w:pStyle并列，ind代表缩进情况：有几个属性值：①firstLine（首行缩进）②left（左缩进）③当left和firstLine同时出现时代表下面的元素有两种属性首行和下面其他行都是有属性的④hanging（悬挂）-->
-     * <w:hint> <!--字体的类型，w:rFonts的子元素，属性值eastAsia表面上的意思是“东亚”，指代“中日韩CJK”类型。-->
-     * <w:bCs> <!--复合字体的加粗-->
-     * <w:bookmarkStart> <!--书签开始-->
-     * <w:bookmarkEnd> <!--书签结束-->
-     * <w:lastRenderedPageBreak > <!--页面进行分页的标记，是w:r的一个属性，表示此段字符串是一页中的最后一个字符串。-->
-     * <w:smartTag > <!--智能标记-->
-     * <w:attr  > <!--自定义XML属性-->
-     *
-     * <w:b w:val=”on”> <!--表示该格式串种的文本为粗体-->
-     * <w:jc w:val="right"/> <!--表示对齐方式-->
-     * <w:sz w:val="40"/> <!--表示字号大小-->
-     * <w:szCs w:val="40"/> <!---->
-     * <w:t xml:space="preserve"> <!--保持空格，如果没有这内容的话，文本的前后空格将会被Word忽略-->
-     * <w:spacing  w:line="600" w:lineRule="auto"/> <!--设置行距，要进行运算，要用数字除以240，如此处为600/240=2.5倍行距-->
-     *
-     * ***/
-    private CoreProperties _rels_rels;
-    private CoreProperties docProps_app;
-    private CoreProperties docProps_core;
-    private CoreProperties word_rels_document_xml;
     private CoreProperties word_theme_theme1;
     private CoreProperties word_fontTable;
+    private CoreProperties word_endnotes;
+    private CoreProperties word_footnotes;
     private CoreProperties word_settings;
     private CoreProperties word_styles;
     private CoreProperties word_webSettings;
     private CoreProperties Content_Types;
+    private List<WordImage> wordImages = new ArrayList<>();
+    private App app = new App();
+    private Rels rels = new Rels();
+    private Core core = new Core();
+    private Custom custom = new Custom();
+    private DocumentRels documentRels = new DocumentRels();
 
     transient String BASE_PATH = "";
     transient String TEMP_PATH = "";
     transient String[] BASE_SIFFIX = {".rels", ".xml", ".jpeg", ".png"};
     transient List<String> BASE_SIFFIX_LIST;
-    transient CoreProperties documentContent;
+//    transient CoreProperties documentContent;
+    transient DocumentContent documentContent;
 
 
     public Word() {
@@ -85,8 +59,9 @@ public class Word {
 
     public void loadWord(String wordPath) throws Exception {
         Path docPath = Paths.get(wordPath);
-        String s = docPath.getFileName().toString();
-        String zipUrl = BASE_PATH + File.separator + s.substring(0, s.lastIndexOf(".")) + ".zip";
+//        String s = docPath.getFileName().toString();
+        long l = System.currentTimeMillis();
+        String zipUrl = BASE_PATH + File.separator + l + ".zip";
         Path zipPath = Paths.get(zipUrl);
         zipPath.toFile().delete();
         Files.copy(docPath, zipPath);
@@ -97,22 +72,121 @@ public class Word {
         try {
             this.BASE_PATH = "";
             this.TEMP_PATH = "";
-            this._rels_rels = fixElement("wordSource/_rels/.rels");
-            this.docProps_app = fixElement("wordSource/docProps/app.xml");
-            this.docProps_core = fixElement("wordSource/docProps/core.xml");
-            this.word_rels_document_xml = fixElement("wordSource/word/_rels/document.xml.rels");
-            this.word_theme_theme1 = fixElement("wordSource/word/theme/theme1.xml");
-            this.documentContent = fixElement("wordSource/word/document.xml");
-            this.word_fontTable = fixElement("wordSource/word/fontTable.xml");
-            this.word_settings = fixElement("wordSource/word/settings.xml");
-            this.word_styles = fixElement("wordSource/word/styles.xml");
-            this.word_webSettings = fixElement("wordSource/word/webSettings.xml");
+            this.rels = this.rels.create();
+            this.custom = this.custom.create();
+            this.documentRels = this.documentRels.create();
+            this.documentContent = new DocumentContent();
+            this.word_theme_theme1 = fixElement("wordSource/theme1.xml");
+//            this.documentContent = fixElement("wordSource/document.xml");
+            this.word_fontTable = fixElement("wordSource/fontTable.xml");
+            this.word_endnotes = fixElement("wordSource/endnotes.xml");
+            this.word_footnotes = fixElement("wordSource/footnotes.xml");
+            this.word_settings = fixElement("wordSource/settings.xml");
+            this.word_styles = fixElement("wordSource/styles.xml");
+            this.word_webSettings = fixElement("wordSource/webSettings.xml");
             this.Content_Types = fixElement("wordSource/[Content_Types].xml");
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         return this;
+    }
+
+    private void unzip(String filePath, String zipDir) {
+        String name = "";
+        try {
+            InputStream inputStream;
+
+            ZipEntry entry;
+            ZipFile zipfile = new ZipFile(filePath);
+            File file = new File(filePath);
+            name = file.getName();
+            name = name.substring(0, name.lastIndexOf("."));
+            zipDir = zipDir + name;
+            TEMP_PATH = zipDir;
+            file = new File(zipDir);
+
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            Enumeration dir = zipfile.entries();
+            while (dir.hasMoreElements()) {
+                entry = (ZipEntry) dir.nextElement();
+                if (entry.isDirectory()) {
+                    name = entry.getName();
+                    File fileObject = new File(zipDir + File.separator + name);
+                    fileObject.mkdir();
+                    continue;
+                }
+
+                file = new File(zipDir + File.separator + entry.getName());
+
+                if (file.isFile() || BASE_SIFFIX_LIST.contains(entry.getName().substring(entry.getName().lastIndexOf(".")))) {
+                    File parentFile = file.getParentFile();
+                    if (!parentFile.exists()) {
+                        parentFile.mkdirs();
+                    }
+                    file.delete();
+                    file.createNewFile();
+                }
+
+                inputStream = zipfile.getInputStream(entry);
+                if (!entry.getName().endsWith("jpeg")) {
+                    SAXReader reader = new SAXReader();
+                    Document document = reader.read(inputStream);
+                    Element rootElement = document.getRootElement();
+                    if (entry.getName().endsWith("document.xml")) {
+//                        CoreProperties properties = fixElement(rootElement);
+                        this.documentContent = new DocumentContent(rootElement);
+                        inputStream = zipfile.getInputStream(entry);
+                        int count;
+                        byte[] dataByte = new byte[1024];
+                        try (FileOutputStream fos = new FileOutputStream(file)) {
+                            while ((count = inputStream.read(dataByte, 0, 1024)) != -1) {
+                                fos.write(dataByte, 0, count);
+                            }
+                        }
+                        inputStream.close();
+                    } else if (entry.getName().endsWith("app.xml")) {
+                        this.app = new App(rootElement);
+                    } else if (entry.getName().equals("_rels/.rels")) {
+                        this.rels = new Rels(rootElement);
+                    } else if (entry.getName().endsWith("core.xml")) {
+                        this.core = new Core(rootElement);
+                    } else if (entry.getName().endsWith("custom.xml")) {
+                        this.custom = new Custom(rootElement);
+                    } else if (entry.getName().endsWith("document.xml.rels")) {
+                        this.documentRels = new DocumentRels(rootElement);
+                    } else {
+                        inputStream = zipfile.getInputStream(entry);
+                        int count;
+                        byte[] dataByte = new byte[1024];
+                        try (FileOutputStream fos = new FileOutputStream(file)) {
+                            while ((count = inputStream.read(dataByte, 0, 1024)) != -1) {
+                                fos.write(dataByte, 0, count);
+                            }
+                        }
+                        inputStream.close();
+                    }
+
+                } else {
+                    int count;
+                    byte[] dataByte = new byte[1024];
+                    try (FileOutputStream fos = new FileOutputStream(file)) {
+                        while ((count = inputStream.read(dataByte, 0, 1024)) != -1) {
+                            fos.write(dataByte, 0, count);
+                        }
+                    }
+                    inputStream.close();
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            Path zipPath = Paths.get(filePath);
+            zipPath.toFile().delete();
+        }
     }
 
     private void moveResource() {
@@ -150,14 +224,14 @@ public class Word {
     }
 
     public void toWord(String filePath) throws Exception {
-        if(!"".equals(TEMP_PATH)){
+        if (!"".equals(TEMP_PATH)) {
             toWordDefult(filePath);
-        }else {
+        } else {
             toWordNew(filePath);
         }
     }
 
-    private void toWordDefult(String filePath) throws Exception{
+    private void toWordDefult(String filePath) throws Exception {
         ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(filePath));
 
         Path rootPath = Paths.get(TEMP_PATH);
@@ -167,13 +241,17 @@ public class Word {
         for (String path : paths) {
             InputStream inputStream = new FileInputStream(BASE_PATH + path);
             if (path.endsWith("core.xml")) {
-                SAXReader reader = new SAXReader();
-                Document document = reader.read(inputStream);
-                Element rootElement = document.getRootElement();
-                CoreProperties properties = fixElement(rootElement);
-                inputStream = propertiesToStrem(properties);
+                inputStream = propertiesToStrem(this.core.toCoreProperties());
             } else if (path.endsWith("document.xml")) {
-                inputStream = propertiesToStrem(this.documentContent);
+                inputStream = propertiesToStrem(this.documentContent.toCoreProperties());
+            } else if (path.endsWith("app.xml")) {
+                inputStream = propertiesToStrem(this.app.toCoreProperties());
+            } else if (path.endsWith("document.xml.rels")) {
+                inputStream = propertiesToStrem(this.documentRels.toCoreProperties());
+            } else if (path.endsWith(".rels")) {
+                inputStream = propertiesToStrem(this.rels.toCoreProperties());
+            } else if (path.endsWith("custom.xml")) {
+                inputStream = propertiesToStrem(this.custom.toCoreProperties());
             }
             path = path.substring(path.indexOf(File.separator) + 1);
             zipOutputStream.putNextEntry(new ZipEntry(path));
@@ -195,45 +273,68 @@ public class Word {
         zipOutputStream.flush();
         zipOutputStream.close();
     }
-    private void toWordNew(String filePath) throws Exception{
+
+    private void toWordNew(String filePath) throws Exception {
         ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(filePath));
-        InputStream inputStream = propertiesToStrem(this._rels_rels);
-        write("_rels/.rels",inputStream,zipOutputStream);
 
-        inputStream = propertiesToStrem(this.docProps_app);
-        write("docProps/app.xml",inputStream,zipOutputStream);
+        InputStream inputStream = propertiesToStrem(this.rels.toCoreProperties());
+        write("_rels/.rels", inputStream, zipOutputStream);
 
-        inputStream = propertiesToStrem(this.docProps_core);
-        write("docProps/core.xml",inputStream,zipOutputStream);
+        inputStream = propertiesToStrem(this.app.toCoreProperties());
+        write("docProps/app.xml", inputStream, zipOutputStream);
 
-        inputStream = propertiesToStrem(this.word_rels_document_xml);
-        write("word/_rels/document.xml.rels",inputStream,zipOutputStream);
+        inputStream = propertiesToStrem(this.core.toCoreProperties());
+        write("docProps/core.xml", inputStream, zipOutputStream);
+
+        inputStream = propertiesToStrem(this.custom.toCoreProperties());
+        write("docProps/custom.xml", inputStream, zipOutputStream);
+
+        inputStream = propertiesToStrem(this.documentRels.toCoreProperties());
+        write("word/_rels/document.xml.rels", inputStream, zipOutputStream);
 
         inputStream = propertiesToStrem(this.word_theme_theme1);
-        write("word/theme/theme1.xml",inputStream,zipOutputStream);
+        write("word/theme/theme1.xml", inputStream, zipOutputStream);
 
-        inputStream = propertiesToStrem(this.documentContent);
-        write("word/document.xml",inputStream,zipOutputStream);
+        inputStream = propertiesToStrem(this.documentContent.toCoreProperties());
+        write("word/document.xml", inputStream, zipOutputStream);
 
         inputStream = propertiesToStrem(this.word_fontTable);
-        write("word/fontTable.xml",inputStream,zipOutputStream);
+        write("word/fontTable.xml", inputStream, zipOutputStream);
+
+        inputStream = propertiesToStrem(this.word_endnotes);
+        write("word/endnotes.xml", inputStream, zipOutputStream);
+
+        inputStream = propertiesToStrem(this.word_footnotes);
+        write("word/footnotes.xml", inputStream, zipOutputStream);
 
         inputStream = propertiesToStrem(this.word_settings);
-        write("word/settings.xml",inputStream,zipOutputStream);
+        write("word/settings.xml", inputStream, zipOutputStream);
 
         inputStream = propertiesToStrem(this.word_styles);
-        write("word/styles.xml",inputStream,zipOutputStream);
+        write("word/styles.xml", inputStream, zipOutputStream);
 
         inputStream = propertiesToStrem(this.word_webSettings);
-        write("word/webSettings.xml",inputStream,zipOutputStream);
+        write("word/webSettings.xml", inputStream, zipOutputStream);
 
         inputStream = propertiesToStrem(this.Content_Types);
-        write("[Content_Types].xml",inputStream,zipOutputStream);
+        write("[Content_Types].xml", inputStream, zipOutputStream);
+
+        if (wordImages.size() > 0) {
+            wordImages.forEach(e -> {
+                try {
+                    InputStream iin = new BufferedInputStream(new FileInputStream(e.getPicSrc()));
+                    write("word/" + e.getTarget(), iin, zipOutputStream);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
+        }
 
         zipOutputStream.flush();
         zipOutputStream.close();
     }
-    private void write(String zipEntry,InputStream inputStream,ZipOutputStream outputStream) throws Exception{
+
+    private void write(String zipEntry, InputStream inputStream, ZipOutputStream outputStream) throws Exception {
         outputStream.putNextEntry(new ZipEntry(zipEntry));
         int b;
         while ((b = inputStream.read()) != -1) {
@@ -241,18 +342,29 @@ public class Word {
         }
         inputStream.close();
     }
+
     private InputStream propertiesToStrem(CoreProperties properties) throws Exception {
         Document document = DocumentHelper.createDocument();
 
         String rootName = properties.getName();
-        if (!properties.getPrefix().trim().equals("")) {
+        if (properties.getPrefix() != null && !properties.getPrefix().trim().equals("")) {
             rootName = properties.getPrefix() + ":" + rootName;
         }
-        Element recordNode = document.addElement(rootName);
         Map<String, String> nameSpace = properties.getNameSpace();
-        nameSpace.forEach((k, v) -> {
-            recordNode.addNamespace(k, v);
-        });
+        String xmlns = nameSpace.get("");
+        Element cuNode = null;
+        if (xmlns != null) {
+            cuNode = document.addElement(rootName, xmlns);
+            nameSpace.remove("");
+        } else {
+            cuNode = document.addElement(rootName);
+        }
+        Element recordNode = cuNode;
+        if (nameSpace != null && nameSpace.size() > 0) {
+            nameSpace.forEach((k, v) -> {
+                recordNode.addNamespace(k, v);
+            });
+        }
         Map<String, String> attribute = properties.getAttribute();
         attribute.forEach((k, v) -> {
             recordNode.addAttribute(k, v);
@@ -260,7 +372,7 @@ public class Word {
         List<CoreProperties> child = properties.getChild();
         for (int i = 0; i < child.size(); i++) {
             CoreProperties coreProperties = child.get(i);
-            stream(coreProperties, recordNode);
+            stream(coreProperties, recordNode, xmlns);
         }
 
         OutputFormat format = OutputFormat.createPrettyPrint();
@@ -276,35 +388,88 @@ public class Word {
         return bufferedInputStream;
     }
 
-    private void stream(CoreProperties properties, Element element) {
-        String name = properties.getName();
-        String prefix = properties.getPrefix();
-        String value = properties.getValue();
-        if ("lastModifiedBy".equalsIgnoreCase(properties.getName())) {
-            value = "WCDK";
-        } else if ("modified".equalsIgnoreCase(properties.getName())) {
-            value = properties.getTimeString();
+    private Document propertiesToDocument(CoreProperties properties) throws Exception {
+        Document document = DocumentHelper.createDocument();
+
+        String rootName = properties.getName();
+        if (properties.getPrefix() != null && !properties.getPrefix().trim().equals("")) {
+            rootName = properties.getPrefix() + ":" + rootName;
         }
-
-        Element element1 = element.addElement(name);
-        element1.setText(value);
-
         Map<String, String> nameSpace = properties.getNameSpace();
-        nameSpace.forEach((k, v) -> {
-            element1.addNamespace(k, v);
-        });
-        if (!prefix.trim().equals("")) {
-            name = prefix + ":" + name;
+        String xmlns = nameSpace.get("");
+        Element cuNode = null;
+        if (xmlns != null) {
+            cuNode = document.addElement(rootName, xmlns);
+            nameSpace.remove("");
+        } else {
+            cuNode = document.addElement(rootName);
         }
-        element1.setName(name);
+        Element recordNode = cuNode;
+        if (nameSpace != null && nameSpace.size() > 0) {
+            nameSpace.forEach((k, v) -> {
+                recordNode.addNamespace(k, v);
+            });
+        }
         Map<String, String> attribute = properties.getAttribute();
         attribute.forEach((k, v) -> {
-            element1.addAttribute(k, v);
+            recordNode.addAttribute(k, v);
         });
         List<CoreProperties> child = properties.getChild();
         for (int i = 0; i < child.size(); i++) {
             CoreProperties coreProperties = child.get(i);
-            stream(coreProperties, element1);
+            stream(coreProperties, recordNode, xmlns);
+        }
+
+//        OutputFormat format = OutputFormat.createPrettyPrint();
+//        format.setEncoding("UTF-8");
+//        StringWriter stringWriter = new StringWriter(1024);
+//        XMLWriter xmlWriter = new XMLWriter(stringWriter, format);
+//
+//        xmlWriter.setEscapeText(false);
+//        xmlWriter.write(document);
+//        xmlWriter.flush();
+//        xmlWriter.close();
+        return document;
+    }
+
+    private void stream(CoreProperties properties, Element element, String xmlns) {
+        String name = properties.getName();
+        String prefix = properties.getPrefix();
+        String value = properties.getValue();
+        Map<String, String> nameSpace = properties.getNameSpace();
+
+
+        Element elementt = null;
+        if (xmlns != null) {
+            elementt = element.addElement(name, xmlns);
+        } else {
+            elementt = element.addElement(name);
+        }
+        if (prefix != null && !prefix.trim().equals("")) {
+            name = prefix + ":" + name;
+            elementt.setName(name);
+        }
+        Element element1 = elementt;
+        if (nameSpace != null && nameSpace.size() > 0) {
+            nameSpace.forEach((k, v) -> {
+                element1.addNamespace(k, v);
+            });
+        }
+
+
+        Map<String, String> attribute = properties.getAttribute();
+        if (attribute != null && attribute.size() > 0) {
+            attribute.forEach((k, v) -> {
+                element1.addAttribute(k, v);
+            });
+        }
+        if (value != null) {
+            element1.setText(value);
+        }
+        List<CoreProperties> child = properties.getChild();
+        for (int i = 0; i < child.size(); i++) {
+            CoreProperties coreProperties = child.get(i);
+            stream(coreProperties, element1, xmlns);
         }
     }
 
@@ -341,10 +506,10 @@ public class Word {
         return coreProperties;
     }
 
-    private CoreProperties fixElement(String path) throws Exception{
+    private CoreProperties fixElement(String path) throws Exception {
         URL resource = this.getClass().getClassLoader().getResource(path);
-        if(resource == null){
-            return  null;
+        if (resource == null) {
+            return null;
         }
         InputStream inputStream = resource.openStream();
         SAXReader reader = new SAXReader();
@@ -430,72 +595,10 @@ public class Word {
         }
     }
 
-    private void unzip(String filePath, String zipDir) {
-        String name = "";
-        try {
-            InputStream inputStream;
-
-            ZipEntry entry;
-            ZipFile zipfile = new ZipFile(filePath);
-            File file = new File(filePath);
-            name = file.getName();
-            name = name.substring(0, name.lastIndexOf("."));
-            zipDir = zipDir + name;
-            TEMP_PATH = zipDir;
-            file = new File(zipDir);
-
-            if (!file.exists()) {
-                file.mkdirs();
-            }
-            Enumeration dir = zipfile.entries();
-            while (dir.hasMoreElements()) {
-                entry = (ZipEntry) dir.nextElement();
-                if (entry.isDirectory()) {
-                    name = entry.getName();
-                    File fileObject = new File(zipDir + File.separator + name);
-                    fileObject.mkdir();
-                    continue;
-                }
-
-                file = new File(zipDir + File.separator + entry.getName());
-
-                if (file.isFile() || BASE_SIFFIX_LIST.contains(entry.getName().substring(entry.getName().lastIndexOf(".")))) {
-                    File parentFile = file.getParentFile();
-                    if (!parentFile.exists()) {
-                        parentFile.mkdirs();
-                    }
-                    file.delete();
-                    file.createNewFile();
-                }
-                inputStream = zipfile.getInputStream(entry);
-                if (entry.getName().endsWith("document.xml")) {
-                    SAXReader reader = new SAXReader();
-                    Document document = reader.read(inputStream);
-                    Element rootElement = document.getRootElement();
-                    CoreProperties properties = fixElement(rootElement);
-                    this.documentContent = properties;
-                    inputStream = propertiesToStrem(properties);
-                }
-                int count;
-                byte[] dataByte = new byte[1024];
-                try (FileOutputStream fos = new FileOutputStream(file)) {
-                    while ((count = inputStream.read(dataByte, 0, 1024)) != -1) {
-                        fos.write(dataByte, 0, count);
-                    }
-                }
-                inputStream.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            Path zipPath = Paths.get(filePath);
-            zipPath.toFile().delete();
-        }
-    }
-
     public List<String> getAllTxt() throws Exception {
-        SAXReader reader = new SAXReader();
-        Document document = reader.read(new File(TEMP_PATH + File.separator + "word" + File.separator + "document.xml"));
+        Document document = propertiesToDocument(this.documentContent.toCoreProperties());
+//        SAXReader reader = new SAXReader();
+//        Document document = reader.read(new File(TEMP_PATH + File.separator + "word" + File.separator + "document.xml"));
         Element rootElement = document.getRootElement();
         return getAllTxt(rootElement);
     }
@@ -579,53 +682,139 @@ public class Word {
     }
 
     public Word append(WordItem wordItem) {
-//        if (wordItem instanceof Paragraph ) {
-//            return appendParagraph((Paragraph) wordItem);
-//        }else if(wordItem instanceof WordTable){
-//
-//        }
+        if (wordItem instanceof WordImage) {
+            WordImage image = (WordImage) wordItem;
+            addImage(image);
+            Paragraph paragraph = new Paragraph();
+            if(image.getAlgin() != null){
+                paragraph.setAlgin(image.getAlgin());
+            }
+            paragraph.setWordItem(wordItem);
+            return appendParagraph(paragraph);
+        } else if (wordItem instanceof Paragraph) {
+            Paragraph p = (Paragraph) wordItem;
+            int length = p.getText().trim().length();
+            app.setWords(app.getWords() + length);
+            app.setCharacters(p.getText().length());
+            app.setCharacterswithspaces(p.getText().length());
+        }
 
-        return appendParagraph(wordItem.toCoreProperties());
+        return appendParagraph(wordItem);
     }
-    public Word getTable(){
-        List<CoreProperties> child = this.documentContent.getChild();
-        for(CoreProperties coreProperties:child){
+
+    private void addImage(WordImage image) {
+
+        String newTarget = "media/" + this.documentRels.getNextImageName();
+        int id = this.documentRels.addRelationship(RelationshipType.image, newTarget);
+
+        image.setTarget(newTarget);
+//        image.setId(String.valueOf(id));
+        image.setId(String.valueOf(wordImages.size()));
+        image.setName("图片 " + id);
+        image.setEmbed("rId" + id);
+
+        try {
+            File file = new File(image.getPicSrc());
+            BufferedImage bufferedImage = ImageIO.read(new FileInputStream(file));
+            int width = bufferedImage.getWidth();
+            int height = bufferedImage.getHeight();
+            double x = width * 9525;
+            double y = height * 9525;
+            int cx = BigDecimal.valueOf(x).intValue();
+            int cy = BigDecimal.valueOf(y).intValue();
+            cx = cx >= 5274310 ? 5274310 : cx;
+            cy = cy >= 3110865 ? 3110865 : cy;
+            String descr = file.getName();
+            descr = descr.substring(0, descr.lastIndexOf("."));
+            image.setDescr(descr);
+            image.setExtent_cx(cx);
+            image.setExtent_cy(cy);
+            image.setExtent_r(2540);
+            bufferedImage.flush();
+            file = null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        this.wordImages.add(image);
+
+    }
+
+    public Word getTable() {
+        List<WordItem> wordItems = this.documentContent.getWordItems();
+        List<CoreProperties> child = new ArrayList<>();
+        wordItems.forEach(wordItem->{
+            if(wordItem instanceof WordTable){
+                child.add(wordItem.toCoreProperties());
+            }
+        });
+//        List<CoreProperties> child = this.documentContent.getChild();
+        for (CoreProperties coreProperties : child) {
             String name = coreProperties.getName();
-            if(name.equals("tbl")){
+            if (name.equals("tbl")) {
                 List<CoreProperties> tableChild = coreProperties.getChild();
                 int rowNum = tableChild.size() - 2;
                 int cellNum = tableChild.get(1).getChild().size();
 
-                WordTable wordTable = new WordTable(rowNum,cellNum);
+                WordTable wordTable = new WordTable(rowNum, cellNum);
             }
         }
         return this;
     }
 
-    public void aa(CoreProperties coreProperties){
-        WordTable wordTable = new WordTable();
-        String prefix = coreProperties.getPrefix();
-        String name = coreProperties.getName();
-        Map<String, String> attribute = coreProperties.getAttribute();
-        Map<String, String> nameSpace = coreProperties.getNameSpace();
 
-        wordTable.setPrefix(prefix);
-        wordTable.setName(name);
-        WordTable.TblPr tableProportes = wordTable.getTableProportes();
+    public Word appendParagraph(WordItem wordItem) {
+//        CoreProperties coreProperties = documentContent.getChild().get(0);
+//        List<CoreProperties> child = coreProperties.getChild();
 
-
+//        wordItems.forEach(wordItem->{
+//            if(wordItem instanceof WordTable){
+//                child.add(wordItem.toCoreProperties());
+//            }
+//        });
+//        int index = child.size() - 1;
+//        CoreProperties sectPr = child.get(index);
+//        child.remove(index);
+//        coreProperties.addChild(context);
+//        coreProperties.addChild(sectPr);
+         this.documentContent.getWordItems().add(wordItem);
+        return this;
     }
 
-    public Word appendParagraph(CoreProperties context) {
-        CoreProperties coreProperties = documentContent.getChild().get(0);
-        List<CoreProperties> child = coreProperties.getChild();
-        int index = child.size() - 1;
-        CoreProperties sectPr = child.get(index);
-        child.remove(index);
-        coreProperties.addChild(context);
-        coreProperties.addChild(sectPr);
+    /**
+     * <p>统计word字数 不统计空格</p>
+     *
+     * @Description:
+     * @Author: wench
+     **/
 
-        return this;
+    public int countWords() {
+        try {
+            List<String> allTxt = getAllTxt();
+            String collect = allTxt.stream().collect(Collectors.joining());
+            int length = collect.length();
+            this.app.setCharacters(length);
+            this.app.setCharacterswithspaces(length);
+            int length1 = collect.replaceAll(" ", "").length();
+            this.app.setWords(length1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return this.app.getWords();
+    }
+
+    public int countPages() {
+        return this.app.getPages();
+    }
+
+    public int countLines() {
+        return this.app.getLines();
+    }
+
+    public int countParagraphs() {
+        return this.app.getParagraphs();
     }
 
 }
