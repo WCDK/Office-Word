@@ -1,4 +1,4 @@
-package com.wen.main.word.core.eunm;
+package com.wcdk.main.word.core.eunm;
 
 public enum RelationshipType {
 

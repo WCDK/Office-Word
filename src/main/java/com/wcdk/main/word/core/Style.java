@@ -1,4 +1,4 @@
-package com.wen.main.word.core;
+package com.wcdk.main.word.core;
 
 import lombok.Data;
 

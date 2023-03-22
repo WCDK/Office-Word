@@ -1,9 +1,7 @@
-package com.wen.main.word.core;
+package com.wcdk.main.word.core;
 
 import lombok.Data;
 import org.dom4j.Element;
-import org.dom4j.Namespace;
-import org.dom4j.Node;
 
 import java.util.ArrayList;
 import java.util.List;

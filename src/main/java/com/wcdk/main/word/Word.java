@@ -1,10 +1,11 @@
-package com.wen.main.word;
+package com.wcdk.main.word;
 
+import com.wcdk.main.word.core.*;
 import com.wen.main.word.core.*;
-import com.wen.main.word.core.eunm.RelationshipType;
-import com.wen.main.word.image.WordImage;
-import com.wen.main.word.paragraph.Paragraph;
-import com.wen.main.word.table.WordTable;
+import com.wcdk.main.word.core.eunm.RelationshipType;
+import com.wcdk.main.word.image.WordImage;
+import com.wcdk.main.word.paragraph.Paragraph;
+import com.wcdk.main.word.table.WordTable;
 import org.dom4j.*;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;

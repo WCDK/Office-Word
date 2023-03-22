@@ -1,8 +1,8 @@
-package com.wen.main.word.paragraph;
+package com.wcdk.main.word.paragraph;
 
-import com.wen.main.word.core.CoreProperties;
-import com.wen.main.word.core.WordItem;
-import com.wen.main.word.core.eunm.Algin;
+import com.wcdk.main.word.core.CoreProperties;
+import com.wcdk.main.word.core.WordItem;
+import com.wcdk.main.word.core.eunm.Algin;
 import lombok.Data;
 
 @Data

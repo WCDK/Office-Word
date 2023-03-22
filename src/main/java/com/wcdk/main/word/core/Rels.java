@@ -1,13 +1,11 @@
-package com.wen.main.word.core;
+package com.wcdk.main.word.core;
 
 import lombok.Data;
 import org.dom4j.Attribute;
 import org.dom4j.Element;
-import org.dom4j.Node;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 

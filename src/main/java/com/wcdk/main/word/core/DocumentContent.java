@@ -1,7 +1,7 @@
-package com.wen.main.word.core;
+package com.wcdk.main.word.core;
 
-import com.wen.main.word.core.eunm.PaperType;
-import com.wen.main.word.image.WordImage;
+import com.wcdk.main.word.core.eunm.PaperType;
+import com.wcdk.main.word.image.WordImage;
 import lombok.Data;
 import org.dom4j.Element;
 

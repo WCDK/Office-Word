@@ -1,9 +1,9 @@
-package com.wen.main.word;
+package com.wcdk.main.word;
 
-import com.wen.main.word.core.eunm.Algin;
-import com.wen.main.word.core.eunm.Color;
-import com.wen.main.word.image.WordImage;
-import com.wen.main.word.paragraph.Paragraph;
+import com.wcdk.main.word.image.WordImage;
+import com.wcdk.main.word.paragraph.Paragraph;
+import com.wcdk.main.word.core.eunm.Algin;
+import com.wcdk.main.word.core.eunm.Color;
 
 public class Test {
 

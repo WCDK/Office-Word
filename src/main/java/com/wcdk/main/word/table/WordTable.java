@@ -1,8 +1,8 @@
-package com.wen.main.word.table;
+package com.wcdk.main.word.table;
 
-import com.wen.main.word.core.CoreProperties;
-import com.wen.main.word.core.WordItem;
-import com.wen.main.word.paragraph.Paragraph;
+import com.wcdk.main.word.paragraph.Paragraph;
+import com.wcdk.main.word.core.CoreProperties;
+import com.wcdk.main.word.core.WordItem;
 import lombok.Data;
 
 import java.util.ArrayList;
