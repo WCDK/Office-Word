@@ -1,11 +1,10 @@
-package com.wen.main.word.image;
+package com.wcdk.main.word.image;
 
-import com.wen.main.word.core.CoreProperties;
-import com.wen.main.word.core.WordItem;
-import com.wen.main.word.core.eunm.Algin;
+import com.wcdk.main.word.core.CoreProperties;
+import com.wcdk.main.word.core.WordItem;
+import com.wcdk.main.word.core.eunm.Algin;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.dom4j.Attribute;
 import org.dom4j.Element;
 
 
