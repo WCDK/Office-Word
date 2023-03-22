@@ -1,7 +1,6 @@
 package com.wcdk.main.word;
 
 import com.wcdk.main.word.core.*;
-import com.wen.main.word.core.*;
 import com.wcdk.main.word.core.eunm.RelationshipType;
 import com.wcdk.main.word.image.WordImage;
 import com.wcdk.main.word.paragraph.Paragraph;

@@ -10,8 +10,9 @@ public class Test {
     public static void main(String[] args) throws Exception {
 //        int i = MyUnits.pxToEMU(4096);
 //        System.out.println(i);
-        a();
+//        a();
 //        b();
+        System.out.println(System.getProperty("user.home"));
     }
     public static void b() throws Exception{
         Word word = new Word();
@@ -28,8 +29,8 @@ public class Test {
         Paragraph paragraph = new Paragraph();
         /** 段落插入 文字 **/
         paragraph.setText("test001");
-        /** 设置样式 2 标题 **/
-        paragraph.setStyle("2");
+        /** 设置样式  1 正文 大于等于2 标题 **/
+        paragraph.setStyle("1");
         /**段落 字体 红色 **/
         paragraph.setFontColor(Color.red.getCode());
         /** 段落 样式 居中 **/
@@ -37,10 +38,10 @@ public class Test {
         /** 将段落 插入 word **/
         word.append(paragraph);
 
-        WordImage wordImage = new WordImage("E:\\2\\3.jpg");
-        wordImage.setAlgin(Algin.center);
-//        WordImage wordImage = new WordImage("e:/234.jpg");
-        word.append(wordImage);
+//        WordImage wordImage = new WordImage("E:\\2\\3.jpg");
+//        wordImage.setAlgin(Algin.center);
+////        WordImage wordImage = new WordImage("e:/234.jpg");
+//        word.append(wordImage);
         /** 输出word **/
         word.toWord("d:\\zs4.docx");
     }
