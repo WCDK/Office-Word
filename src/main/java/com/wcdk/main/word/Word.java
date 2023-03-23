@@ -48,7 +48,7 @@ public class Word {
     transient String TEMP_PATH = "";
     transient String[] BASE_SIFFIX = {".rels", ".xml", ".jpeg", ".png"};
     transient List<String> BASE_SIFFIX_LIST;
-//    transient CoreProperties documentContent;
+    transient CoreProperties documentContentc;
     transient DocumentContent documentContent;
 
 
@@ -136,8 +136,8 @@ public class Word {
                     Document document = reader.read(inputStream);
                     Element rootElement = document.getRootElement();
                     if (entry.getName().endsWith("document.xml")) {
-//                        CoreProperties properties = fixElement(rootElement);
-                        this.documentContent = new DocumentContent(rootElement);
+                        CoreProperties properties = fixElement(rootElement);
+                        this.documentContentc = properties;
                         inputStream = zipfile.getInputStream(entry);
                         int count;
                         byte[] dataByte = new byte[1024];
@@ -243,7 +243,8 @@ public class Word {
             if (path.endsWith("core.xml")) {
                 inputStream = propertiesToStrem(this.core.toCoreProperties());
             } else if (path.endsWith("document.xml")) {
-                inputStream = propertiesToStrem(this.documentContent.toCoreProperties());
+//                inputStream = propertiesToStrem(this.documentContent.toCoreProperties());
+                inputStream = propertiesToStrem(this.documentContentc);
             } else if (path.endsWith("app.xml")) {
                 inputStream = propertiesToStrem(this.app.toCoreProperties());
             } else if (path.endsWith("document.xml.rels")) {
@@ -596,7 +597,8 @@ public class Word {
     }
 
     public List<String> getAllTxt() throws Exception {
-        Document document = propertiesToDocument(this.documentContent.toCoreProperties());
+        CoreProperties coreProperties = this.documentContent ==null?this.documentContentc:documentContent.toCoreProperties();
+        Document document = propertiesToDocument(coreProperties);
 //        SAXReader reader = new SAXReader();
 //        Document document = reader.read(new File(TEMP_PATH + File.separator + "word" + File.separator + "document.xml"));
         Element rootElement = document.getRootElement();

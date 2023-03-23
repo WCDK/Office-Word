@@ -51,17 +51,19 @@ public class DocumentContent {
     public DocumentContent(){}
 
     public DocumentContent(Element element){
-        Element body = element.element("body");
-        List<Element> ps = body.elements("p");
-        for(Element p :ps){
-            Element r = p.element("r");
-            Element drawing = r.element("drawing");
-            if(drawing != null){
-                WordImage wordImage = new WordImage(drawing);
-            }
-        }
-
-        System.out.printf("");
+//        Element body = element.element("body");
+//        List<Element> ps = body.elements("p");
+//        for(Element p :ps){
+//            Element r = p.element("r");
+//            Element drawing = r.element("drawing");
+//            if(drawing != null){
+//                WordImage wordImage = new WordImage(drawing);
+//            }else {
+//                this.wordItems.add();
+//            }
+//        }
+//
+//        System.out.printf("");
     }
 
     public CoreProperties toCoreProperties(){
