@@ -1,11 +1,11 @@
-package com.wcdk.main.word.core;
+package com.wcdk.main.core;
 
-import com.wcdk.main.word.core.eunm.PaperType;
+import com.wcdk.main.core.eunm.PaperType;
 import lombok.Data;
 import org.dom4j.Element;
 
 @Data
-public class SectPr implements WordItem {
+public class SectPr implements OfficeItem {
     int margin_top;
     int margin_right;
     int margin_bottom;

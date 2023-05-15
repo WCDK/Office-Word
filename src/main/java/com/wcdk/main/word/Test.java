@@ -2,16 +2,18 @@ package com.wcdk.main.word;
 
 import com.wcdk.main.word.image.WordImage;
 import com.wcdk.main.word.paragraph.Paragraph;
-import com.wcdk.main.word.core.eunm.Algin;
-import com.wcdk.main.word.core.eunm.Color;
+import com.wcdk.main.core.eunm.Algin;
+import com.wcdk.main.core.eunm.Color;
 
 public class Test {
 
     public static void main(String[] args) throws Exception {
+        Integer integer = 1;
+        System.out.println(integer.toString());
 //        int i = MyUnits.pxToEMU(4096);
 //        System.out.println(i);
 //        a();
-        b();
+//        b();
 //        System.out.println(System.getProperty("user.home"));
     }
     public static void b() throws Exception{

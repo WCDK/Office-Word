@@ -1,7 +1,7 @@
 package com.wcdk.main.word;
 
-import com.wcdk.main.word.core.*;
-import com.wcdk.main.word.core.eunm.RelationshipType;
+import com.wcdk.main.core.*;
+import com.wcdk.main.core.eunm.RelationshipType;
 import com.wcdk.main.word.image.WordImage;
 import com.wcdk.main.word.paragraph.Paragraph;
 import com.wcdk.main.word.table.WordTable;
@@ -68,30 +68,6 @@ public class Word {
         unzip(zipUrl, BASE_PATH);
     }
 
-    public Word createNewWord() {
-        try {
-            this.BASE_PATH = "";
-            this.TEMP_PATH = "";
-            this.rels = this.rels.create();
-            this.custom = this.custom.create();
-            this.documentRels = this.documentRels.create();
-            this.documentContent = new DocumentContent();
-            this.word_theme_theme1 = fixElement("wordSource/theme1.xml");
-//            this.documentContent = fixElement("wordSource/document.xml");
-            this.word_fontTable = fixElement("wordSource/fontTable.xml");
-            this.word_endnotes = fixElement("wordSource/endnotes.xml");
-            this.word_footnotes = fixElement("wordSource/footnotes.xml");
-            this.word_settings = fixElement("wordSource/settings.xml");
-            this.word_styles = fixElement("wordSource/styles.xml");
-            this.word_webSettings = fixElement("wordSource/webSettings.xml");
-            this.Content_Types = fixElement("wordSource/[Content_Types].xml");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return this;
-    }
-
     private void unzip(String filePath, String zipDir) {
         String name = "";
         try {
@@ -136,7 +112,7 @@ public class Word {
                     Document document = reader.read(inputStream);
                     Element rootElement = document.getRootElement();
                     if (entry.getName().endsWith("document.xml")) {
-                        CoreProperties properties = fixElement(rootElement);
+                        CoreProperties properties = OfficeUtil.fixElement(rootElement);
                         this.documentContentc = properties;
                         inputStream = zipfile.getInputStream(entry);
                         int count;
@@ -189,6 +165,30 @@ public class Word {
         }
     }
 
+    public Word createNewWord() {
+        try {
+            this.BASE_PATH = "";
+            this.TEMP_PATH = "";
+            this.rels = this.rels.create();
+            this.custom = this.custom.create();
+            this.documentRels = this.documentRels.create();
+            this.documentContent = new DocumentContent();
+            this.word_theme_theme1 = OfficeUtil.fixElement("wordSource/theme1.xml");
+//            this.documentContent = fixElement("wordSource/document.xml");
+            this.word_fontTable = OfficeUtil.fixElement("wordSource/fontTable.xml");
+            this.word_endnotes = OfficeUtil.fixElement("wordSource/endnotes.xml");
+            this.word_footnotes = OfficeUtil.fixElement("wordSource/footnotes.xml");
+            this.word_settings = OfficeUtil.fixElement("wordSource/settings.xml");
+            this.word_styles = OfficeUtil.fixElement("wordSource/styles.xml");
+            this.word_webSettings = OfficeUtil.fixElement("wordSource/webSettings.xml");
+            this.Content_Types = OfficeUtil.fixElement("wordSource/[Content_Types].xml");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return this;
+    }
+
     private void moveResource() {
         try {
             String sourcePath = System.getProperty("java.io.tmpdir") + File.separator;
@@ -237,7 +237,7 @@ public class Word {
         Path rootPath = Paths.get(TEMP_PATH);
         File rootFile = rootPath.toFile();
         List<String> paths = new ArrayList<>();
-        parePath(rootFile, paths);
+        OfficeUtil.parePath(rootFile, paths,BASE_PATH);
         for (String path : paths) {
             InputStream inputStream = new FileInputStream(BASE_PATH + path);
             if (path.endsWith("core.xml")) {
@@ -373,7 +373,7 @@ public class Word {
         List<CoreProperties> child = properties.getChild();
         for (int i = 0; i < child.size(); i++) {
             CoreProperties coreProperties = child.get(i);
-            stream(coreProperties, recordNode, xmlns);
+            OfficeUtil.stream(coreProperties, recordNode, xmlns);
         }
 
         OutputFormat format = OutputFormat.createPrettyPrint();
@@ -418,7 +418,7 @@ public class Word {
         List<CoreProperties> child = properties.getChild();
         for (int i = 0; i < child.size(); i++) {
             CoreProperties coreProperties = child.get(i);
-            stream(coreProperties, recordNode, xmlns);
+            OfficeUtil.stream(coreProperties, recordNode, xmlns);
         }
 
 //        OutputFormat format = OutputFormat.createPrettyPrint();
@@ -433,168 +433,7 @@ public class Word {
         return document;
     }
 
-    private void stream(CoreProperties properties, Element element, String xmlns) {
-        String name = properties.getName();
-        String prefix = properties.getPrefix();
-        String value = properties.getValue();
-        Map<String, String> nameSpace = properties.getNameSpace();
 
-
-        Element elementt = null;
-        if (xmlns != null) {
-            elementt = element.addElement(name, xmlns);
-        } else {
-            elementt = element.addElement(name);
-        }
-        if (prefix != null && !prefix.trim().equals("")) {
-            name = prefix + ":" + name;
-            elementt.setName(name);
-        }
-        Element element1 = elementt;
-        if (nameSpace != null && nameSpace.size() > 0) {
-            nameSpace.forEach((k, v) -> {
-                element1.addNamespace(k, v);
-            });
-        }
-
-
-        Map<String, String> attribute = properties.getAttribute();
-        if (attribute != null && attribute.size() > 0) {
-            attribute.forEach((k, v) -> {
-                element1.addAttribute(k, v);
-            });
-        }
-        if (value != null) {
-            element1.setText(value);
-        }
-        List<CoreProperties> child = properties.getChild();
-        for (int i = 0; i < child.size(); i++) {
-            CoreProperties coreProperties = child.get(i);
-            stream(coreProperties, element1, xmlns);
-        }
-    }
-
-    private CoreProperties fixElement(Element element) {
-        CoreProperties coreProperties = new CoreProperties();
-        coreProperties.setName(element.getName());
-        coreProperties.setPrefix(element.getNamespacePrefix());
-        List<Namespace> namespaces = element.declaredNamespaces();
-        for (Namespace namespace : namespaces) {
-            coreProperties.addNameSpace(namespace.getPrefix(), namespace.getURI());
-        }
-        List<Attribute> attributes = element.attributes();
-        for (Attribute attribute : attributes) {
-            coreProperties.addAttribute(attribute.getQualifiedName(), attribute.getValue());
-        }
-        List<Node> content = element.content();
-        for (Node node : content) {
-            if (node instanceof Namespace) {
-                continue;
-            } else if (node instanceof DefaultText) {
-                if (node.getName() == null) {
-                    continue;
-                }
-                DefaultText defaultText = (DefaultText) node;
-                CoreProperties chi = new CoreProperties();
-                chi.setName(defaultText.getName());
-                chi.setValue(defaultText.getText());
-                coreProperties.addChild(chi);
-                continue;
-            }
-            Element nodeDocument = (Element) node;
-            pareElement(nodeDocument, coreProperties);
-        }
-        return coreProperties;
-    }
-
-    private CoreProperties fixElement(String path) throws Exception {
-        URL resource = this.getClass().getClassLoader().getResource(path);
-        if (resource == null) {
-            return null;
-        }
-        InputStream inputStream = resource.openStream();
-        SAXReader reader = new SAXReader();
-        Document document = reader.read(inputStream);
-        Element element = document.getRootElement();
-        CoreProperties coreProperties = new CoreProperties();
-        coreProperties.setName(element.getName());
-        coreProperties.setPrefix(element.getNamespacePrefix());
-        List<Namespace> namespaces = element.declaredNamespaces();
-        for (Namespace namespace : namespaces) {
-            coreProperties.addNameSpace(namespace.getPrefix(), namespace.getURI());
-        }
-        List<Attribute> attributes = element.attributes();
-        for (Attribute attribute : attributes) {
-            coreProperties.addAttribute(attribute.getQualifiedName(), attribute.getValue());
-        }
-        List<Node> content = element.content();
-        for (Node node : content) {
-            if (node instanceof Namespace) {
-                continue;
-            } else if (node instanceof DefaultText) {
-                if (node.getName() == null) {
-                    continue;
-                }
-                DefaultText defaultText = (DefaultText) node;
-                CoreProperties chi = new CoreProperties();
-                chi.setName(defaultText.getName());
-                chi.setValue(defaultText.getText());
-                coreProperties.addChild(chi);
-                continue;
-            }
-            Element nodeDocument = (Element) node;
-            pareElement(nodeDocument, coreProperties);
-        }
-        return coreProperties;
-    }
-
-    private void pareElement(Element element, CoreProperties coreProperties) {
-        CoreProperties child = new CoreProperties();
-        child.setPrefix(element.getNamespacePrefix());
-        child.setName(element.getName());
-        List<Attribute> attributes = element.attributes();
-        for (Attribute attribute : attributes) {
-            child.addAttribute(attribute.getQualifiedName(), attribute.getValue());
-        }
-        List<Namespace> namespaces = element.declaredNamespaces();
-        for (Namespace namespace : namespaces) {
-            child.addNameSpace(namespace.getPrefix(), namespace.getURI());
-        }
-        coreProperties.addChild(child);
-
-        List<Node> content = element.content();
-        for (Node node : content) {
-            if (node instanceof Namespace) {
-                continue;
-            }
-            if (node instanceof DefaultText) {
-                DefaultText defaultText = (DefaultText) node;
-                child.setValue(defaultText.getText());
-            } else if (node instanceof Element) {
-                Element childElement = (Element) node;
-                pareElement(childElement, child);
-            }
-        }
-    }
-
-    private void parePath(File file, List<String> result) {
-        if (file.isDirectory()) {
-            File[] files = file.listFiles();
-            for (File file1 : files) {
-                if (file1.isDirectory()) {
-                    parePath(file1, result);
-                } else {
-                    String path = file1.getPath();
-                    String substring = path.substring(BASE_PATH.length());
-                    result.add(substring);
-                }
-            }
-        } else {
-            String path = file.getPath();
-            String substring = path.substring(BASE_PATH.length());
-            result.add(substring);
-        }
-    }
 
     public List<String> getAllTxt() throws Exception {
         CoreProperties coreProperties = this.documentContent ==null?this.documentContentc:documentContent.toCoreProperties();
@@ -683,7 +522,7 @@ public class Word {
         }
     }
 
-    public Word append(WordItem wordItem) {
+    public Word append(OfficeItem wordItem) {
         if (wordItem instanceof WordImage) {
             WordImage image = (WordImage) wordItem;
             addImage(image);
@@ -744,7 +583,7 @@ public class Word {
     }
 
     public Word getTable() {
-        List<WordItem> wordItems = this.documentContent.getWordItems();
+        List<OfficeItem> wordItems = this.documentContent.getWordItems();
         List<CoreProperties> child = new ArrayList<>();
         wordItems.forEach(wordItem->{
             if(wordItem instanceof WordTable){
@@ -766,7 +605,7 @@ public class Word {
     }
 
 
-    public Word appendParagraph(WordItem wordItem) {
+    public Word appendParagraph(OfficeItem wordItem) {
 //        CoreProperties coreProperties = documentContent.getChild().get(0);
 //        List<CoreProperties> child = coreProperties.getChild();
 

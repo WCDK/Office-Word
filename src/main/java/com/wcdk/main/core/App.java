@@ -1,4 +1,4 @@
-package com.wcdk.main.word.core;
+package com.wcdk.main.core;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +10,7 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class App implements WordItem{
+public class App implements OfficeItem {
     String  template;
     int pages;
     int words;

@@ -1,6 +1,6 @@
-package com.wcdk.main.word.core;
+package com.wcdk.main.core;
 
-import com.wcdk.main.word.core.eunm.RelationshipType;
+import com.wcdk.main.core.eunm.RelationshipType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,10 +13,11 @@ import java.util.stream.Collectors;
 
 
 @Data
-public class DocumentRels implements WordItem{
+public class DocumentRels implements OfficeItem {
     List<Node> relationships = new ArrayList<>();
     String xmlns = RelationshipType.base.getValue();
-
+    boolean excel = false;
+    Integer sheets;
 
     @Override
     public CoreProperties toCoreProperties() {
@@ -53,6 +54,14 @@ public class DocumentRels implements WordItem{
         relationships.add(endnotes);
         relationships.add(fontTable);
         relationships.add(theme);
+        if(excel){
+            Node sharedStrings = new Node(RelationshipType.sharedStrings,"sharedStrings.xml","rId"+8);
+            relationships.add(sharedStrings);
+            for(int i = 0;i < sheets;i++){
+                Node sheet = new Node(RelationshipType.sheet,"worksheets/sheet"+i+1+".xml","rId"+(8+i+1));
+                relationships.add(sheet);
+            }
+        }
         return this;
     }
     public int getNextRid(){

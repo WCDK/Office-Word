@@ -1,4 +1,4 @@
-package com.wcdk.main.word.core.eunm;
+package com.wcdk.main.core.eunm;
 
 public enum Color {
     red("FF0000"),

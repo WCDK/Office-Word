@@ -1,4 +1,4 @@
-package com.wcdk.main.word.core;
+package com.wcdk.main.core;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,7 +7,7 @@ import org.dom4j.Element;
 
 @Data
 @NoArgsConstructor
-public class Core implements WordItem{
+public class Core implements OfficeItem {
     String cp = "http://schemas.openxmlformats.org/package/2006/metadata/core-properties";
     String dc = "http://purl.org/dc/elements/1.1/";
     String dcterms="http://purl.org/dc/terms/";

@@ -1,4 +1,4 @@
-package com.wcdk.main.word.core.eunm;
+package com.wcdk.main.core.eunm;
 
 public enum PaperType {
     A4(11906,16838,1440,1800,1440,1800,851,992,0);

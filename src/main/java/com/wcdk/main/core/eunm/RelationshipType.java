@@ -1,4 +1,4 @@
-package com.wcdk.main.word.core.eunm;
+package com.wcdk.main.core.eunm;
 
 public enum RelationshipType {
 
@@ -13,7 +13,9 @@ public enum RelationshipType {
     header("http://schemas.openxmlformats.org/officeDocument/2006/relationships/header"),
     settings("http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings"),
     webSettings("http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings"),
-    styles("http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles");
+    styles("http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"),
+    sheet("http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"),
+    sharedStrings("http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings");
     private String value;
 
     RelationshipType(String value) {

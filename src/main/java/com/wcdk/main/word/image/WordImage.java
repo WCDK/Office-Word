@@ -1,8 +1,8 @@
 package com.wcdk.main.word.image;
 
-import com.wcdk.main.word.core.CoreProperties;
-import com.wcdk.main.word.core.WordItem;
-import com.wcdk.main.word.core.eunm.Algin;
+import com.wcdk.main.core.CoreProperties;
+import com.wcdk.main.core.OfficeItem;
+import com.wcdk.main.core.eunm.Algin;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.dom4j.Element;
@@ -10,7 +10,7 @@ import org.dom4j.Element;
 
 @AllArgsConstructor
 @Data
-public class WordImage implements WordItem {
+public class WordImage implements OfficeItem {
     /**
      * 距离
      **/

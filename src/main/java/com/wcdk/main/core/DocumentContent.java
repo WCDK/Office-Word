@@ -1,7 +1,6 @@
-package com.wcdk.main.word.core;
+package com.wcdk.main.core;
 
-import com.wcdk.main.word.core.eunm.PaperType;
-import com.wcdk.main.word.image.WordImage;
+import com.wcdk.main.core.eunm.PaperType;
 import lombok.Data;
 import org.dom4j.Element;
 
@@ -45,7 +44,7 @@ public class DocumentContent {
     String wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape";
     String Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh wp14";
 
-    List<WordItem> wordItems = new ArrayList<>();
+    List<OfficeItem> wordItems = new ArrayList<>();
     SectPr sectPr = new SectPr(PaperType.A4);
 
     public DocumentContent(){}

@@ -1,15 +1,15 @@
 package com.wcdk.main.word.table;
 
 import com.wcdk.main.word.paragraph.Paragraph;
-import com.wcdk.main.word.core.CoreProperties;
-import com.wcdk.main.word.core.WordItem;
+import com.wcdk.main.core.CoreProperties;
+import com.wcdk.main.core.OfficeItem;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class WordTable implements WordItem {
+public class WordTable implements OfficeItem {
     String elementId;
     String name = "tbl";
     String prefix = "w";
@@ -297,7 +297,7 @@ public class WordTable implements WordItem {
 
         @Data
         public class Cell {
-            private List<WordItem> paragraph = new ArrayList<>();
+            private List<OfficeItem> paragraph = new ArrayList<>();
             private TcPr tcPr = new TcPr();
             @Data
             public class TcPr {
@@ -324,11 +324,11 @@ public class WordTable implements WordItem {
                     return tcPr;
                 }
             }
-            public Cell addParagraph(WordItem paragraph){
+            public Cell addParagraph(OfficeItem paragraph){
                 this.paragraph.add(paragraph);
                 return this;
             }
-            public Cell addParagraph(List<WordItem> paragraph){
+            public Cell addParagraph(List<OfficeItem> paragraph){
                 this.paragraph.addAll(paragraph);
                 return this;
             }

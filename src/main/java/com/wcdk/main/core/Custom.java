@@ -1,4 +1,4 @@
-package com.wcdk.main.word.core;
+package com.wcdk.main.core;
 
 import lombok.Data;
 import org.dom4j.Element;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
-public class Custom implements WordItem{
+public class Custom implements OfficeItem {
     String propertyxmlns = "http://schemas.openxmlformats.org/officeDocument/2006/custom-properties";
     String propertyxmlnsVt = "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes";
     List<Property> properties = new ArrayList<>();

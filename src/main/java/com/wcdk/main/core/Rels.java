@@ -1,4 +1,4 @@
-package com.wcdk.main.word.core;
+package com.wcdk.main.core;
 
 import lombok.Data;
 import org.dom4j.Attribute;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
-public class Rels implements WordItem{
+public class Rels implements OfficeItem {
      List<Node> elationships = new ArrayList<Node>();
     @Override
     public CoreProperties toCoreProperties() {
