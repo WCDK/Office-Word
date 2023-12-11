@@ -15,6 +15,7 @@ public enum RelationshipType {
     webSettings("http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings"),
     styles("http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"),
     sheet("http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"),
+    numbering("http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering"),
     sharedStrings("http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings");
     private String value;
 

@@ -43,7 +43,6 @@ public class DocumentContent {
     String wne="http://schemas.microsoft.com/office/word/2006/wordml";
     String wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape";
     String Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh wp14";
-
     List<OfficeItem> wordItems = new ArrayList<>();
     SectPr sectPr = new SectPr(PaperType.A4);
 
@@ -86,6 +85,7 @@ public class DocumentContent {
         doc.addAttribute("xmlns:o",o);
         doc.addAttribute("xmlns:r",r);
         doc.addAttribute("xmlns:m",m);
+        doc.addAttribute("xmlns:v",v);
         doc.addAttribute("xmlns:wp14",wp14);
         doc.addAttribute("xmlns:wp",wp);
         doc.addAttribute("xmlns:w10",w10);

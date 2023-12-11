@@ -43,6 +43,7 @@ public class Word {
     private Core core = new Core();
     private Custom custom = new Custom();
     private DocumentRels documentRels = new DocumentRels();
+    private Numbering numbering = new Numbering();
 
     transient String BASE_PATH = "";
     transient String TEMP_PATH = "";
@@ -50,6 +51,9 @@ public class Word {
     transient List<String> BASE_SIFFIX_LIST;
     transient CoreProperties documentContentc;
     transient DocumentContent documentContent;
+    boolean sort = false;
+    private String sortIlvl = "0";
+    String numId = "1";
 
 
     public Word() {
@@ -133,6 +137,9 @@ public class Word {
                         this.custom = new Custom(rootElement);
                     } else if (entry.getName().endsWith("document.xml.rels")) {
                         this.documentRels = new DocumentRels(rootElement);
+                    }else if (entry.getName().endsWith("numbering.xml")) {
+                        this.numbering = new Numbering(rootElement);
+                        this.sort = true;
                     } else {
                         inputStream = zipfile.getInputStream(entry);
                         int count;
@@ -164,7 +171,12 @@ public class Word {
             zipPath.toFile().delete();
         }
     }
-
+    public Word createNewWord(Boolean sort,String sortNumId) {
+        this.sort = sort;
+        this.numId = sortNumId;
+        this.numbering.setUsed(sort);
+        return createNewWord();
+    }
     public Word createNewWord() {
         try {
             this.BASE_PATH = "";
@@ -174,7 +186,6 @@ public class Word {
             this.documentRels = this.documentRels.create();
             this.documentContent = new DocumentContent();
             this.word_theme_theme1 = OfficeUtil.fixElement("wordSource/theme1.xml");
-//            this.documentContent = fixElement("wordSource/document.xml");
             this.word_fontTable = OfficeUtil.fixElement("wordSource/fontTable.xml");
             this.word_endnotes = OfficeUtil.fixElement("wordSource/endnotes.xml");
             this.word_footnotes = OfficeUtil.fixElement("wordSource/footnotes.xml");
@@ -182,6 +193,15 @@ public class Word {
             this.word_styles = OfficeUtil.fixElement("wordSource/styles.xml");
             this.word_webSettings = OfficeUtil.fixElement("wordSource/webSettings.xml");
             this.Content_Types = OfficeUtil.fixElement("wordSource/[Content_Types].xml");
+            if(sort){
+                this.documentRels.addRelationship(RelationshipType.numbering,"numbering.xml");
+                CoreProperties coreProperties = new CoreProperties(null,"Override");
+                coreProperties.addAttribute("PartName","/word/numbering.xml");
+                coreProperties.addAttribute("ContentType","application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml");
+                this.Content_Types.addChild(coreProperties);
+            }
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -243,7 +263,6 @@ public class Word {
             if (path.endsWith("core.xml")) {
                 inputStream = propertiesToStrem(this.core.toCoreProperties());
             } else if (path.endsWith("document.xml")) {
-//                inputStream = propertiesToStrem(this.documentContent.toCoreProperties());
                 inputStream = propertiesToStrem(this.documentContentc);
             } else if (path.endsWith("app.xml")) {
                 inputStream = propertiesToStrem(this.app.toCoreProperties());
@@ -253,6 +272,10 @@ public class Word {
                 inputStream = propertiesToStrem(this.rels.toCoreProperties());
             } else if (path.endsWith("custom.xml")) {
                 inputStream = propertiesToStrem(this.custom.toCoreProperties());
+            }
+            if(numbering.isUsed()){
+                inputStream = propertiesToStrem(this.numbering.toCoreProperties());
+                write("word/numbering.xml", inputStream, zipOutputStream);
             }
             path = path.substring(path.indexOf(File.separator) + 1);
             zipOutputStream.putNextEntry(new ZipEntry(path));
@@ -271,6 +294,7 @@ public class Word {
                 bufferedReader.close();
             }
         }
+
         zipOutputStream.flush();
         zipOutputStream.close();
     }
@@ -319,6 +343,10 @@ public class Word {
 
         inputStream = propertiesToStrem(this.Content_Types);
         write("[Content_Types].xml", inputStream, zipOutputStream);
+        if(numbering.isUsed()){
+            inputStream = propertiesToStrem(this.numbering.toCoreProperties());
+            write("word/numbering.xml", inputStream, zipOutputStream);
+        }
 
         if (wordImages.size() > 0) {
             wordImages.forEach(e -> {
@@ -420,16 +448,6 @@ public class Word {
             CoreProperties coreProperties = child.get(i);
             OfficeUtil.stream(coreProperties, recordNode, xmlns);
         }
-
-//        OutputFormat format = OutputFormat.createPrettyPrint();
-//        format.setEncoding("UTF-8");
-//        StringWriter stringWriter = new StringWriter(1024);
-//        XMLWriter xmlWriter = new XMLWriter(stringWriter, format);
-//
-//        xmlWriter.setEscapeText(false);
-//        xmlWriter.write(document);
-//        xmlWriter.flush();
-//        xmlWriter.close();
         return document;
     }
 
@@ -438,8 +456,6 @@ public class Word {
     public List<String> getAllTxt() throws Exception {
         CoreProperties coreProperties = this.documentContent ==null?this.documentContentc:documentContent.toCoreProperties();
         Document document = propertiesToDocument(coreProperties);
-//        SAXReader reader = new SAXReader();
-//        Document document = reader.read(new File(TEMP_PATH + File.separator + "word" + File.separator + "document.xml"));
         Element rootElement = document.getRootElement();
         return getAllTxt(rootElement);
     }
@@ -522,25 +538,46 @@ public class Word {
         }
     }
 
-    public Word append(OfficeItem wordItem) {
-        if (wordItem instanceof WordImage) {
-            WordImage image = (WordImage) wordItem;
+    public Word append(OfficeItem wordItem,OfficeItem...more) {
+        if (wordItem instanceof WordImage image) {
             addImage(image);
             Paragraph paragraph = new Paragraph();
             if(image.getAlgin() != null){
                 paragraph.setAlgin(image.getAlgin());
             }
             paragraph.setWordItem(wordItem);
-            return appendParagraph(paragraph);
-        } else if (wordItem instanceof Paragraph) {
-            Paragraph p = (Paragraph) wordItem;
-            int length = p.getText().trim().length();
-            app.setWords(app.getWords() + length);
-            app.setCharacters(p.getText().length());
-            app.setCharacterswithspaces(p.getText().length());
+            appendParagraph(paragraph);
+        } else if (wordItem instanceof Paragraph p) {
+            if(p.getText() != null){
+                int length = p.getText().trim().length();
+                app.setWords(app.getWords() + length);
+                app.setCharacters(p.getText().length());
+                app.setCharacterswithspaces(p.getText().length());
+            }
+            appendParagraph(wordItem);
         }
-
-        return appendParagraph(wordItem);
+        if(more != null && more.length > 0){
+            Arrays.asList(more).forEach(e->{
+                if (e instanceof WordImage image) {
+                    addImage(image);
+                    Paragraph paragraph = new Paragraph();
+                    if(image.getAlgin() != null){
+                        paragraph.setAlgin(image.getAlgin());
+                    }
+                    paragraph.setWordItem(e);
+                    appendParagraph(paragraph);
+                } else if (e instanceof Paragraph p) {
+                    if(p.getText() != null){
+                        int length = p.getText().trim().length();
+                        app.setWords(app.getWords() + length);
+                        app.setCharacters(p.getText().length());
+                        app.setCharacterswithspaces(p.getText().length());
+                    }
+                    appendParagraph(e);
+                }
+            });
+        }
+        return this;
     }
 
     private void addImage(WordImage image) {
@@ -606,23 +643,17 @@ public class Word {
 
 
     public Word appendParagraph(OfficeItem wordItem) {
-//        CoreProperties coreProperties = documentContent.getChild().get(0);
-//        List<CoreProperties> child = coreProperties.getChild();
-
-//        wordItems.forEach(wordItem->{
-//            if(wordItem instanceof WordTable){
-//                child.add(wordItem.toCoreProperties());
-//            }
-//        });
-//        int index = child.size() - 1;
-//        CoreProperties sectPr = child.get(index);
-//        child.remove(index);
-//        coreProperties.addChild(context);
-//        coreProperties.addChild(sectPr);
+        if(sort && wordItem instanceof Paragraph paragraph){
+            paragraph.setSort(true);
+            paragraph.setNumId(numId);
+            int i = Integer.parseInt(this.sortIlvl)+1;
+            paragraph.setSortIlvl(i+"");
+            this.sortIlvl = i+"";
+            this.numbering.buildLvl(paragraph.getStyle());
+        }
          this.documentContent.getWordItems().add(wordItem);
         return this;
     }
-
     /**
      * <p>统计word字数 不统计空格</p>
      *

@@ -8,13 +8,7 @@ import com.wcdk.main.core.eunm.Color;
 public class Test {
 
     public static void main(String[] args) throws Exception {
-        Integer integer = 1;
-        System.out.println(integer.toString());
-//        int i = MyUnits.pxToEMU(4096);
-//        System.out.println(i);
-//        a();
-//        b();
-//        System.out.println(System.getProperty("user.home"));
+        a();
     }
     public static void b() throws Exception{
         Word word = new Word();
@@ -26,26 +20,38 @@ public class Test {
         /** word 对象 **/
         Word word = new Word();
         /** 新建一个空白 word  **/
-        word.createNewWord();
+        word.createNewWord(true,"1");
         /** 插入段落  **/
         Paragraph paragraph = new Paragraph();
         /** 段落插入 文字 **/
         paragraph.setText("test001");
-        /** 设置样式  1 正文 大于等于2 标题 **/
-        paragraph.setStyle("1");
+        /** 设置样式  1 正文 大于等于2标题  2:一级标题 3 二级标题 以此类推**/
+        paragraph.setStyle("2");
         /**段落 字体 红色 **/
         paragraph.setFontColor(Color.red.getCode());
         /** 段落 样式 居中 **/
         paragraph.setAlgin(Algin.center);
-        /** 将段落 插入 word **/
-        word.append(paragraph);
+        paragraph.setBidi("0");
+        Paragraph paragraph1 = new Paragraph();
 
-        WordImage wordImage = new WordImage("E:\\2\\3.jpg");
-        wordImage.setAlgin(Algin.center);
-//        WordImage wordImage = new WordImage("e:/234.jpg");
-        word.append(wordImage);
+        /** 段落插入 文字 **/
+        paragraph1.setText("test001");
+        /** 设置样式  1 正文 大于等于2标题  2:一级标题 3 二级标题 以此类推**/
+        paragraph1.setStyle("3");
+        /**段落 字体 红色 **/
+        paragraph1.setFontColor(Color.red.getCode());
+        /** 段落 样式 居中 **/
+        paragraph1.setAlgin(Algin.center);
+        paragraph1.setBidi("0");
+
+//        WordImage wordImage = new WordImage("E:\\2\\3.jpg");
+//        wordImage.setAlgin(Algin.center);
+////        WordImage wordImage = new WordImage("e:/234.jpg");
+//        word.append(wordImage);
+
+        word.append(paragraph,paragraph1);
         /** 输出word **/
-        word.toWord("d:\\zs4.docx");
+        word.toWord("d:\\zs5.docx");
     }
 
 }

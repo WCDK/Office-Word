@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<w:numbering xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:v="urn:schemas-microsoft-com:vml" mc:Ignorable="w14 wp14" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wpsCustomData="http://www.wps.cn/officeDocument/2013/wpsCustomData" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math">
+  <w:abstractNum w:abstractNumId="0">
+    <w:nsid w:val="BC1EEE41"></w:nsid>
+    <w:multiLevelType w:val="multilevel"></w:multiLevelType>
+    <w:tmpl w:val="BC1EEE41"></w:tmpl>
+    <w:lvl w:tentative="0" w:ilvl="0">
+      <w:start w:val="1"></w:start>
+      <w:numFmt w:val="decimal"></w:numFmt>
+      <w:pStyle w:val="2"></w:pStyle>
+      <w:lvlText w:val="%1."></w:lvlText>
+      <w:lvlJc w:val="left"></w:lvlJc>
+      <w:pPr>
+        <w:ind w:hanging="432" w:left="432"></w:ind>
+      </w:pPr>
+      <w:rPr>
+        <w:rFonts w:hint="default"></w:rFonts>
+      </w:rPr>
+    </w:lvl>
+    <w:lvl w:tentative="0" w:ilvl="1">
+      <w:start w:val="1"></w:start>
+      <w:numFmt w:val="decimal"></w:numFmt>
+      <w:pStyle w:val="3"></w:pStyle>
+      <w:lvlText w:val="%1.%2."></w:lvlText>
+      <w:lvlJc w:val="left"></w:lvlJc>
+      <w:pPr>
+        <w:ind w:hanging="432" w:left="432"></w:ind>
+      </w:pPr>
+      <w:rPr>
+        <w:rFonts w:hint="default"></w:rFonts>
+      </w:rPr>
+    </w:lvl>
+  </w:abstractNum>
+  <w:num w:numId="1">
+    <w:abstractNumId w:val="0"></w:abstractNumId>
+  </w:num>
+</w:numbering>

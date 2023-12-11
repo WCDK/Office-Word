@@ -90,7 +90,7 @@ public class Excel {
                     Element rootElement = document.getRootElement();
                     if (entry.getName().endsWith("workbook.xml")) {
                         CoreProperties properties = OfficeUtil.fixElement(rootElement);
-                        this.documentContentc = properties;
+//                        this.documentContentc = properties;
                         inputStream = zipfile.getInputStream(entry);
                         int count;
                         byte[] dataByte = new byte[1024];

@@ -15,8 +15,11 @@ public class Paragraph implements OfficeItem {
     String fontColor;
     String style;
     String bidi;
+    boolean sort = false;
     Algin algin;
     String highlight;
+    String sortIlvl;
+    String numId = "1";
     @Override
     public CoreProperties toCoreProperties() {
         if (wordItem != null || text != null){
@@ -49,8 +52,20 @@ public class Paragraph implements OfficeItem {
             }
             if(this.style != null){
                 CoreProperties pStyle = new CoreProperties("w","pStyle").addAttribute("w:val",this.style);
-                CoreProperties bidi = new CoreProperties("w","bidi").addAttribute("w:val","0");
-                pPr.addChild(pStyle,bidi);
+                pPr.addChild(pStyle);
+            }
+            if(this.bidi != null){
+                CoreProperties bidi = new CoreProperties("w","bidi").addAttribute("w:val",this.bidi);
+                CoreProperties ind = new CoreProperties("w","ind").addAttribute("w:firstLineChars","0");
+                ind.addAttribute("w:left","1151").addAttribute("w:hanging","1151");
+                pPr.addChild(bidi,ind);
+//                if(sort){
+//                    CoreProperties numPr = new CoreProperties("w","numPr");
+//                    CoreProperties ilvl = new CoreProperties("w","ilvl").addAttribute("w:val",this.sortIlvl);
+//                    CoreProperties numId = new CoreProperties("w","numId").addAttribute("w:val",this.numId);
+//                    numPr.addChild(ilvl,numId);
+//                    pPr.addChild(numPr);
+//                }
             }
 
             if(wordItem != null){
